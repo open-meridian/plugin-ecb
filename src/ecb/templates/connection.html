@@ -1,6 +1,20 @@
+{#- Connection, at admin: the data role's (meridian/roles/data/connection.html),
+    with the ECB's nuance at its blocks only -- the head's status, and
+    "Sources" as a section of its own, one line per source (the spec's §5),
+    its row's detail saying where it reads, how TARGET's calendar was read
+    and the answers kept. No rate: prices are the reading roles'. -#}
 {% extends "meridian/roles/data/connection.html" %}
-{#- The vendor's nuance, at the role's blocks only: here, a section naming
-    the vendor after the common ones. -#}
+{% import "meridian/kit.html" as kit %}
+{% block status %}{{ kit.status({"state": data.state, "label": data.said, "detail": detail, "at": data.checked_at, "at_label": "Last checked"}) }}{% endblock %}
 {% block vendor_sections %}
-<section class="panel"><h2>Reference vendor</h2><p class="muted">A stand-in vendor serving daily candles; replace it with your own.</p></section>
+<section class="panel">
+<h2>Sources</h2>
+<table class="one-line">
+<thead><tr><th>Source</th><th>State</th><th class="wide-only">Last release</th><th>Next expected</th><th class="num wide-only">Calls</th><th class="more"><span class="visually-hidden">Details</span></th></tr></thead>
+<tbody>
+{% for s in data.sources %}
+<tr data-source="{{ s.dataset }}"><td>{{ s.source }}</td><td>{{ s.state }}</td><td class="wide-only">{{ (s.last_release|day) if s.last_release else "Not yet" }}</td><td>{{ (s.next_expected|day) if s.next_expected else "Not known" }}</td><td class="num wide-only">{{ s.calls }}</td><td class="more"><details class="row-detail" name="sources"><summary aria-label="Details of {{ s.source }}">…</summary><div class="row-detail-pop"><h3>{{ s.source }}</h3><dl><dt>Dataset</dt><dd><code>{{ s.dataset }}</code></dd><dt>Reads</dt><dd>{{ data.source }}</dd><dt>State</dt><dd>{{ s.state }}</dd><dt>Last release</dt><dd>{{ (s.last_release|day) if s.last_release else "Not yet" }}{% if data.published_at %}, the portal's rates last changed {{ data.published_at|moment }}{% endif %}</dd><dt>Next expected</dt><dd>{{ ((s.next_expected|day) ~ ", around 16:00 CET") if s.next_expected else "Not known" }}</dd><dt>Calendar</dt><dd>{{ data.calendar or "Not read yet" }}</dd><dt>Calls</dt><dd>{{ s.calls }}, {{ data.not_modified }} answered unchanged</dd><dt>Last error</dt><dd>{{ s.last_error or "None" }}</dd><dt>Answers kept</dt><dd>{{ data.responses_kept }}{% if data.kept_for %}, {{ data.kept_for }}{% endif %}</dd></dl></div></details></td></tr>
+{% endfor %}
+</tbody></table>
+</section>
 {% endblock %}

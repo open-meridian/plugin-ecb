@@ -1,51 +1,93 @@
-# ecb
+# meridian-ecb
 
-A Meridian data plugin, made by `meridian plugin new --role data`: it puts a
-vendor's prices into the deployment's lake.
+The European Central Bank's public reference data for
+[Open Meridian](https://open-meridian.com): an Open Meridian plugin that puts
+the ECB's
+[euro foreign exchange reference rates](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html)
+into a deployment's lake, each TARGET business day's rate for about thirty
+currencies against the euro, each rate the price of the euro's cash
+instrument in the other currency, as the ECB quotes it. It reads the ECB's
+Data Portal (SDMX), and holds the `data` role, a data plugin. This is
+release 0.1.0, not released yet. How to set it up and use it is in
+[docs/](docs/README.md); how a plugin like it is built is documented at
+[open-meridian.dev](https://open-meridian.dev).
 
-It runs beside a sidecar in a Meridian deployment and reaches nothing of the
-deployment's else. What it may publish and subscribe to comes from the roles
-`pyproject.toml` declares, once a deployment admin approves them when it is
-launched, never from its code. Its vendor is its own to reach: `vendor.py`
-stands in for one, answering from responses written into it, so it runs
-anywhere until you replace it with your vendor's client.
+It is built on the SDK it pins, `open-meridian==0.31.0`, which declares
+contract v26. It is stage 0 of the ECB's data plugin (meridian-design
+`spec/a-public-rates-and-filings-data-plugin.md`, §8): the reference rates
+as prices, on the existing contract. The euro short-term rate (€STR) follows
+with the lake's rates kinds.
 
-Put it in a deployment that `meridian connect` signed you in to:
+## What it records
 
-    meridian plugin upload
-    meridian plugin launch ecb 0.1.0 --instance ecb
+- **One dataset, `<instance>:ecb_fx`:** prices, pushed when each day's rates
+  appear and pulled for any past day the lake wants; daily; history from
+  1999; Frankfurt's day, ending at midnight; TARGET's calendar; no venue;
+  kept, with the ECB cited.
+- **Each rate as the ECB quotes it.** Every currency is quoted per euro, so
+  USD 1.1225 is the price of the euro's cash instrument, in dollars. Nothing
+  is inverted: a reader wanting the other way inverts it, and says so.
+- **A close for its business date.** The rate's day is the business date, a
+  plain date; the price's kind is `close`, the day's one reference rate.
+  Its published time is when the portal says the rates changed, stated only
+  for a rate read on its own day; a rate read later states none rather than
+  a wrong one.
+- **Exact.** Every rate is made a decimal from the text the portal wrote.
+- **Every currency resolved** to the deployment's cash instrument by its
+  ISO 4217 code, as of the moment it is asked, a miss reported with why.
+  The plugin mints no currency: core answers a code the deployment does not
+  hold with the platform master's currency, pulled. A day with no rate is
+  no rate, never a zero.
+- **TARGET's calendar read** from the deployment: the next rates expected,
+  and the days the ECB publishes nothing on, declined without a request.
+- **Every answer kept** as received, from the first day, in the storage the
+  deployment grants, and named by each row it was first read into.
 
-A deployment admin then licenses its dataset, and entitles the plugins that
-may read it, on the dashboard's Data sources page. On a deployment installed
-for development, run it as you write it, each save running in about a second:
+Its pages, under Manage alone, are the data role's, the same on every data
+plugin, and show how it reaches the ECB and what it serves, never a rate:
+**Connection** (`read_connection`, "No key needed", "Does not stream", and
+its Sources) and **Datasets** (`read_datasets`, saying whether a deployment
+admin has licensed the dataset, with its Lag and Records), each the same
+through the deployment's MCP. The data role's figures are on its Summary.
 
-    meridian plugin dev --instance ecb
+## Checking it
 
-Hold it to the rules every Meridian plugin is built to, and run its tests:
+    make ci-local                                  # lint, tests, plugin check, image, e2e: the pre-push gate
+    make preview SHOTS=<dir>                       # each page in a browser with the kit, at 375, 582 and 1280 px
 
-    pip install -e . pytest
-    meridian plugin check --verified --run-tests
+`make e2e` runs it on core's plugin harness (core v26) beside a reading
+plugin: the ECB's portal unreachable at first, then sample data reading the
+committed answer's last ten days, the rates read back in the right
+instruments, a past day wanted and recorded, a weekend day and a currency it
+never prices declined, both tools answering what the pages show, and a new
+container recording nothing twice and reading its licence on start.
 
-Its tests run the data suite the SDK carries (`tests/test_suite.py`): each
-case of the role mapped to one of the vendor's responses and run through the
-plugin's own conversion (`convert.py`). A plugin holding `data` is verified
-for it only by passing every case: keep each passing as you replace the
-vendor. A case about trades or quotes, which its daily dataset never
-publishes, is marked not presented, with why, until a dataset declares them. Every price is parsed from the vendor's text as a `Decimal`, never
-through a `float`; every subject and venue is resolved before a row names
-it, and what does not resolve is reported.
+**The data suite.** `tests/test_suite.py` runs the SDK's suite on the
+plugin's own conversion, and it passes: stage 0's cases are presented,
+`reads-a-calendar` and its dataset's licences among them; every other case
+is about a kind of data the ECB never states -- a day's open, high, low and
+volume, a crypto asset, a venue, a security another source named, trades,
+quotes, settlement dates, outcomes -- and is not presented, with why, as the
+suite lets it.
 
-Its catalogue (`declaration.py`) declares the dataset it serves: its key,
-vendor, data types, how its rows arrive, its cadence, history, the vendor's
-terms and its day. Its pages are under the dashboard's Manage (`admin`):
-Connection, whether the vendor answers and what was asked of it, and
-Datasets, what it serves and the standing wants it keeps current. It shows
-no price: prices are the reading roles'. Each page is also a read tool for
-an agent an admin delegates to, `read_connection` and `read_datasets`. They
-are built on Open Meridian's plugin UI kit, which the dashboard serves on the
-plugin's own host at `/.meridian/ui/`.
+## The terms, summarised
 
-`AGENTS.md` teaches any coding agent to build pages with the kit, and the same
-live loop; `CLAUDE.md` and the `develop-live` skill under `.claude/` lead
-Claude Code to it. Commit them with the plugin, so whoever works on it next
-has them too; `.dockerignore` keeps them out of its image.
+Not legal advice; read the ECB's own words before relying on them.
+
+- **Free use, the ECB cited.** The ECB's website allows free use of its
+  information, reproduced accurately with the ECB cited as the source, a
+  change to it stated
+  ([copyright and disclaimer](https://www.ecb.europa.eu/home/disclaimer/html/index.en.html)).
+  So the dataset's default licence is kept, with derived use and display,
+  no limit on retention, and not one person's terms (`personal_use` false);
+  the attribution is shown on the Datasets page. A deployment's licence on
+  its Data sources page confirms or replaces it.
+- **For information purposes only.** The ECB publishes the reference rates
+  for information and discourages using them for transactions.
+- **No endorsement.** This project is not affiliated with or endorsed by the
+  European Central Bank.
+
+## Licence
+
+Apache-2.0 (LICENSE, NOTICE). The ECB's answer under `src/ecb/responses/` is
+its reference rates as received on 2026-10-19.

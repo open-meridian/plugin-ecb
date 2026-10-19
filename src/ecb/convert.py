@@ -1,276 +1,136 @@
-"""The conversion: what the vendor said, put into the lake in the contract's
-words, once, at the edge.
+"""The reference rates as the lake's prices: each rate the price of the
+euro's cash instrument in the other currency, as the ECB quotes it.
 
-Every number is parsed from the vendor's own text as a `Decimal`, never
-through a `float` (`json.loads(..., parse_float=Decimal)`): a binary float
-holds about 17 significant digits, so a price with more decimal places than
-that would be recorded as some other price, and the SDK refuses a float
-outright. Every subject and venue is resolved before a row names it, and
-what does not resolve is reported, never guessed: the plugin never mints
-reference data. Each row's key is made from its raw record, so a repeat
-changes nothing and the day still forming is restated under the same key,
-its business date the day the dataset's declared day says it is. A price in
-a token with no ISO 4217 code is in the token's own cash instrument.
+The lake keeps FX as prices (spec/the-lake, its Q3): a rate is the price of
+a currency's cash instrument, in another currency. The ECB quotes every
+currency per euro -- USD 1.1225 is what one euro costs in dollars -- so every
+rate is the price of the euro's cash instrument, in that currency. Nothing is
+inverted, here or in the lake (principle 14): a reader wanting euros per
+dollar inverts it itself, and says so.
 
-What every data plugin does the same is the SDK's (`meridian.roles.data`):
-`Wants` hears what the lake wants, answers it with this conversion, declines
-what it does not serve by reason, keeps a standing want until it is
-withdrawn, records rows in the lake's batches and counts them for the
-Datasets page, and reads the datasets' licences; `Venue` resolves a venue
-once. Only the vendor's words are this module's.
+Each price:
 
-`meridian.suites.run("data", producers)` holds this to the role's suite
-(tests/test_suite.py): each case mapped to one of the vendor's responses,
-run through this code, against a recorder standing in for the sidecar.
+- **kind** `close`, the dataset's declared close for the business date: a
+  fixing is a dataset of closes (spec/the-lake), and the reference rate is
+  the day's one rate. Basis `per_unit`.
+- **business_date** the rate's day, as the portal states it: a plain date.
+- **valid from and until** the declared day: Frankfurt's, midnight to
+  midnight (`day_time_zone` Europe/Berlin, `day_end_minute` 0).
+- **row key** the currency's code and the day (`USD:2026-10-19`): the same
+  rate read again is a repeat, and a rate the ECB corrects is the same row's
+  next version.
+- **source time** `published`, where the plugin knows it: the portal's
+  Last-Modified when the rate was first read from an answer stating it on
+  the rate's own day, which the hourly check of the current rates is
+  (raw.py). A rate first read later -- a past day a reader wanted -- states
+  no published time rather than a wrong one.
+- **raw** the answer it was first read from, kept in the plugin's storage.
+
+A rate whose currency did not resolve is not sent, and neither is any rate
+while the euro's own instrument has not: the caller reports each miss.
 """
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass, field
-from datetime import UTC, date, datetime, timedelta
-from decimal import Decimal
-from typing import Any
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from datetime import date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
-import meridian
+from meridian import Money, ObservationMeta, Price, SourceTime
 from meridian.plugin.v1 import operations_pb2 as ops
-from meridian.roles import data
 
-from .vendor import FIAT, Vendor
+from .rates import EUR, Rate
 
-#: How the vendor is named on what this plugin reports: its identifiers'
-#: `source`, and its misses'.
-SOURCE = "reference"
-
-#: Its one dataset's key, as the catalogue declares it (declaration.py).
-KEY = "daily"
-
-NS = 1_000_000_000
-
-
-def parse(text: str) -> dict[str, Any]:
-    """The vendor's JSON, every number a Decimal as the vendor wrote it."""
-    parsed: dict[str, Any] = json.loads(text, parse_float=Decimal, parse_int=Decimal)
-    return parsed
+#: The day the dataset declares: Frankfurt's, ending at midnight.
+DAY_TIME_ZONE = "Europe/Berlin"
+DAY_END_MINUTE = 0
+FRANKFURT = ZoneInfo(DAY_TIME_ZONE)
 
 
 def _ns(moment: datetime) -> int:
-    return int(moment.timestamp()) * NS + moment.microsecond * 1_000
+    return int(moment.timestamp()) * 10**9
 
 
-def _as_of(want: ops.ObservationsWantedEvent) -> int:
-    """The moment a want asks about, to read a record as of (W3.6): its
-    valid time, else the start of its business date, else now."""
-    if want.valid_from_ns:
-        return int(want.valid_from_ns)
-    if want.business_date:
-        return _ns(datetime.fromisoformat(want.business_date).replace(tzinfo=UTC))
-    return _ns(datetime.now(UTC))
+def day_bounds(day: date) -> tuple[int, int]:
+    """The declared day for business date `day`: midnight to midnight,
+    Frankfurt time, in nanoseconds since the epoch."""
+    start = datetime.combine(day, time(0, 0), FRANKFURT)
+    end = datetime.combine(day + timedelta(days=1), time(0, 0), FRANKFURT)
+    return _ns(start), _ns(end)
 
 
-@dataclass
-class Converter:
-    """The plugin's conversion, against whatever operations it is given: the
-    plugin's own when it runs, a recorder's in its tests."""
+def frankfurt_day(at_ns: int) -> date:
+    """The day in Frankfurt at a moment."""
+    return datetime.fromtimestamp(at_ns // 10**9, FRANKFURT).date()
 
-    plugin: meridian.Plugin
-    vendor: Vendor = field(default_factory=Vendor)
-    #: The vendor's symbols by the instrument each resolved to: what a want,
-    #: which names instruments, is served from. A plugin owning storage keeps
-    #: this map there, never a vendor's code as a key in core.
-    products: dict[str, str] = field(default_factory=dict)
-    #: Whether sample data is on: the stand-in vendor is sample data itself.
-    sample_data: bool = False
-    #: What the lake wants of it and what it sent, kept by the SDK: its
-    #: wants and standing wants, its counts and its datasets' licences.
-    wants: data.Wants = field(init=False)
-    #: The venue master's ID for each MIC the vendor names, resolved once.
-    venues: dict[str, data.Venue] = field(default_factory=dict)
 
-    def __post_init__(self) -> None:
-        self.wants = data.Wants(self.plugin, (KEY,))
+def row_key(code: str, day: date) -> str:
+    return f"{code}:{day.isoformat()}"
 
-    @property
-    def dataset(self) -> str:
-        """The dataset its rows name: the instance, a colon and the key."""
-        return self.wants.dataset(KEY)
 
-    async def read_licences(self) -> None:
-        """Its own declared datasets' licences (contract v20, W10.9): a
-        dataset with none is served by its catalogue's default terms until a
-        deployment admin licenses it, which the Datasets page says."""
-        await self.wants.read_licences()
+@dataclass(frozen=True)
+class First:
+    """Where a rate was first read: the answer's key in storage, and its
+    published time, 0 where the plugin does not know it."""
 
-    # ── Resolving ───────────────────────────────────────────────────────
+    key: str
+    published_ns: int = 0
 
-    async def instrument(self, symbol: str, as_of_ns: int) -> str:
-        """The deployment's instrument for the vendor's symbol, as of a date;
-        empty, with the miss reported, where it does not resolve to one."""
-        named = [meridian.Identifier(scheme="symbol", value=symbol, source=SOURCE)]
-        found = await self.plugin.resolve_identifier(identifiers=named, as_of_ns=as_of_ns)
-        if found.found and found.instrument_id:
-            return str(found.instrument_id)
-        await self.plugin.report_missing_instrument(
-            source=SOURCE,
-            identifiers=named,
-            as_of_ns=as_of_ns,
-            reason=found.miss_reason or ops.MISS_REASON_NOT_FOUND,
-        )
-        return ""
 
-    async def venue(self, mic: str, as_of_ns: int) -> str:
-        """The venue master's ID for the MIC the vendor names, asked once;
-        empty, with the miss reported once, where the deployment holds no
-        such venue."""
-        held = self.venues.setdefault(mic, data.Venue())
-        return await held.resolve(self.plugin, (("iso10383", mic, ""),), SOURCE, as_of_ns)
+@dataclass(frozen=True)
+class Converted:
+    """Rates as prices, and the currencies that held any back, once each."""
 
-    async def map_products(self, as_of_ns: int) -> None:
-        """Resolve each symbol the vendor serves this key, so a want naming
-        its instrument can be served."""
-        for symbol in self.vendor.entitled:
-            text = self.vendor.daily(symbol)
-            if text is None:
-                continue
-            instrument = await self.instrument(str(parse(text)["base"]), as_of_ns)
-            if instrument:
-                self.products[instrument] = symbol
+    prices: tuple[Price, ...]
+    unresolved: tuple[str, ...]
 
-    async def symbol_for(self, instrument: str, as_of_ns: int) -> str | None:
-        """The vendor's symbol for an instrument a want names. One this
-        plugin resolved is in `products`; one another source resolved -- a
-        custodian's, say -- is read from its record (W3.6) and matched by a
-        symbol in it to one the vendor serves, then kept. None where nothing
-        in the record is one the vendor serves."""
-        known = self.products.get(instrument)
-        if known is not None:
-            return known
-        found = await self.plugin.resolve_instrument(
-            instrument_id=instrument, as_of_ns=as_of_ns
-        )
-        if not found.found:
-            return None
-        named = {i.value for i in found.instrument.identifiers if i.scheme == "symbol"}
-        for symbol in self.vendor.entitled:
-            text = self.vendor.daily(symbol)
-            if text is not None and str(parse(text)["base"]) in named:
-                self.products[instrument] = symbol
-                return symbol
-        return None
 
-    # ── Converting ──────────────────────────────────────────────────────
-
-    async def convert(
-        self, symbol: str, text: str
-    ) -> tuple[list[meridian.Price], list[meridian.Bar]]:
-        """One daily candle, as the vendor sent it, as the lake's rows: its
-        close, and its bar where the vendor states the day's range."""
-        candle = parse(text)
-        day = date.fromisoformat(str(candle["day"]))
-        # The dataset's declared day: Etc/UTC, ending at midnight.
-        start = datetime(day.year, day.month, day.day, tzinfo=UTC)
-        as_of = _ns(start)
-        subject = await self.instrument(str(candle["base"]), as_of)
-        if not subject:
-            return [], []
-        quote = str(candle["quote"])
-        if quote in FIAT:
-            currency = {"currency_code": quote}
-        else:
-            # A token has no ISO 4217 code: its price is in its own cash
-            # instrument, never in a fiat code it is pegged to.
-            token = await self.instrument(quote, as_of)
-            if not token:
-                return [], []
-            currency = {"instrument_id": token}
-        venue = await self.venue(str(candle["mic"]), as_of) if "mic" in candle else ""
-        meta = meridian.ObservationMeta(
-            row_key=f"{symbol}:1d:{day.isoformat()}",
-            subjects=[meridian.SubjectRef(entity_id=subject)],
-            source=meridian.Source(dataset=self.dataset, venue_id=venue),
-            valid_from_ns=as_of,
-            valid_until_ns=_ns(start + timedelta(days=1)),
-            business_date=day,
-            source_times=[
-                meridian.SourceTime(
-                    kind="published",
-                    at_ns=_ns(datetime.fromisoformat(str(candle["published"]))),
-                )
-            ],
-            raw=self.plugin.raw_record(f"daily/{symbol}/{day.isoformat()}"),
-        )
-
-        def money(amount: Decimal) -> meridian.Money:
-            return meridian.Money(amount, **currency)
-
-        prices = [
-            meridian.Price(
-                meta=meta, kind="close", price=money(candle["close"]), basis="per_unit"
+def to_prices(
+    rates: Sequence[Rate],
+    instruments: Mapping[str, str],
+    *,
+    dataset: str,
+    first: Callable[[Rate], First],
+    raw: Callable[[str], ops.RawRecordRef],
+    days: Sequence[date] | None = None,
+) -> Converted:
+    """The prices `rates` state, on `days` where given; `instruments` maps an
+    ISO code to the deployment's cash instrument resolved for it, `first`
+    says where each rate was first read, and `raw` names that answer."""
+    euro = instruments.get(EUR, "")
+    wanted = set(days) if days is not None else None
+    prices: list[Price] = []
+    unresolved: dict[str, None] = {} if euro else {EUR: None}
+    for rate in rates:
+        if wanted is not None and rate.day not in wanted:
+            continue
+        if not instruments.get(rate.currency):
+            unresolved[rate.currency] = None
+            continue
+        if not euro:
+            continue
+        start, end = day_bounds(rate.day)
+        where = first(rate)
+        prices.append(
+            Price(
+                meta=ObservationMeta(
+                    row_key=row_key(rate.currency, rate.day),
+                    subjects=[ops.SubjectRef(entity_id=euro)],
+                    source=ops.Source(dataset=dataset),
+                    valid_from_ns=start,
+                    valid_until_ns=end,
+                    business_date=rate.day,
+                    source_times=(
+                        [SourceTime(kind="published", at_ns=where.published_ns)]
+                        if where.published_ns
+                        else []
+                    ),
+                    raw=raw(where.key),
+                ),
+                kind="close",
+                price=Money(rate.value, rate.currency),
+                basis="per_unit",
             )
-        ]
-        bars = []
-        if {"open", "high", "low"} <= candle.keys():
-            bars.append(
-                meridian.Bar(
-                    meta=meta,
-                    open=money(candle["open"]),
-                    high=money(candle["high"]),
-                    low=money(candle["low"]),
-                    close=money(candle["close"]),
-                    volume=candle.get("volume", Decimal(0)),
-                )
-            )
-        return prices, bars
-
-    async def record(
-        self, prices: list[meridian.Price], bars: list[meridian.Bar], want_id: str = ""
-    ) -> None:
-        """Rows recorded in the lake's batches, against a want where they
-        answer one, and counted for the Datasets page."""
-        await self.wants.record("prices", prices, KEY, want_id)
-        await self.wants.record("bars", bars, KEY, want_id)
-
-    async def record_daily(self, symbol: str, text: str) -> None:
-        """A candle the vendor sent, recorded: the push path."""
-        prices, bars = await self.convert(symbol, text)
-        await self.record(prices, bars)
-
-    # ── Wants ───────────────────────────────────────────────────────────
-
-    async def on_want(self, heard: meridian.Heard[ops.ObservationsWantedEvent]) -> None:
-        """What the lake wants of this plugin's datasets: recorded against,
-        where the vendor serves the subject, and declined where it does not
-        (the SDK's `Wants.hear`, answered by `answer`)."""
-        await self.wants.hear(heard, self.answer)
-
-    async def answer(
-        self,
-        want: ops.ObservationsWantedEvent,
-        key: str,
-        subjects: list[str],
-        kinds: tuple[int, ...],
-    ) -> dict[str, str]:
-        """One want answered from the vendor: its rows recorded against it,
-        and each subject it does not serve, with why."""
-        prices: list[meridian.Price] = []
-        bars: list[meridian.Bar] = []
-        declined: dict[str, str] = {}
-        as_of_ns = _as_of(want)
-        for subject in subjects:
-            symbol = await self.symbol_for(subject, as_of_ns)
-            text = self.vendor.daily(symbol) if symbol else None
-            if key != KEY or symbol is None or text is None:
-                declined[subject] = "not_covered"
-                continue
-            more_prices, more_bars = await self.convert(symbol, text)
-            prices += more_prices
-            bars += more_bars
-        await self.record(prices, bars, want_id=want.want_id)
-        if want.standing:
-            self.wants.stand(want, subjects, kinds)
-        return declined
-
-    async def on_withdrawn(self, heard: meridian.Heard[ops.WantWithdrawnEvent]) -> None:
-        """A standing want no reader asked for within the dataset's cadence:
-        no longer kept current."""
-        self.wants.withdraw(heard.message.want_id)
+        )
+    return Converted(tuple(prices), tuple(unresolved))
