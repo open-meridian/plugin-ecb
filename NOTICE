@@ -1,0 +1,9 @@
+meridian-ecb
+Copyright 2026 Societal Lab Inc.
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+The data this plugin reads are the European Central Bank's, published on its
+Data Portal. The ECB allows free use of the information on its website
+provided it is reproduced accurately and the ECB is cited as the source. This
+project is not affiliated with or endorsed by the European Central Bank.
