@@ -1,1 +1,2 @@
-"""A Meridian data plugin: a vendor's prices, put into the lake."""
+"""The European Central Bank's euro foreign exchange reference rates: an Open
+Meridian data plugin."""

@@ -9,8 +9,7 @@ AGENTS.md
 CLAUDE.md
 CLAUDE.local.md
 .meridian
-# The tests, the CI that runs them and the pre-push hook: checked before an
-# upload, never run in the image.
-tests
-.github
-hooks
+# What `make test`, `make preview` and `make e2e` leave behind.
+.test.log
+preview/
+.e2e

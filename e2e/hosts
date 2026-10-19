@@ -1,0 +1,6 @@
+# The e2e's hosts file, mounted over the plugin's /etc/hosts (e2e/plugin.yaml):
+# the ECB's portal answers nowhere, so the plugin's first check fails as it
+# would offline, and the run never reads the live portal.
+127.0.0.1 localhost
+::1 localhost
+127.0.0.1 data-api.ecb.europa.eu

@@ -1,289 +1,93 @@
-# ecb
+# meridian-ecb
 
-A Meridian plugin, in Python on the open-meridian SDK. It runs beside a
-sidecar in a Meridian deployment and reaches nothing else: what it may publish
-and subscribe to comes from the roles `pyproject.toml` declares under
-`[tool.meridian]`, once a deployment admin approves them.
+The European Central Bank's euro foreign exchange reference rates as an Open
+Meridian data plugin, in Python on the open-meridian SDK (0.31.0, contract
+v26). It runs beside a sidecar in a Meridian deployment and puts each TARGET
+business day's reference rates into the deployment's lake, each rate the
+price of the euro's cash instrument in the other currency, as the ECB quotes
+it. What it may publish and subscribe to comes from its one role, `data`,
+declared in `pyproject.toml`, once a deployment admin approves it. It is
+stage 0 of the ECB's data plugin: meridian-design's
+`spec/a-public-rates-and-filings-data-plugin.md` (rulings 343 to 349 made it
+one plugin per publisher's feed).
 
-- `src/ecb/__main__.py` connects to the sidecar and serves the
-  pages; `src/ecb/page.py` declares them, each a view function
-  and a template under `templates/`, built on the plugin UI kit (below).
-- A save changes what the plugin does, never what it is allowed to do. Roles
-  and dependencies take a new version, which a person approves.
-- Who may use it is not the plugin's to say. A person holds `admin`, `read`
-  or `write` on a plugin, or `admin` and one of the others, granted in the
-  deployment's access groups, the same for every plugin, and opens it from
-  the dashboard's home by Manage (`admin`), Open (`write`) or View (`read`).
-  A session carries the one level chosen, and `request.caller` tells a view
-  that level (`caller.level`, `caller.admin`) and the accounts it reaches:
-  what the person may read (`caller.read`, `caller.may_read`) and write
-  (`caller.write`, `caller.may_write`), both under Open, read alone under
-  View, and none under Manage. Declare no `tags`: a plugin has none, and
-  `meridian plugin upload` refuses a `pyproject.toml` that names them.
-- **Declare each page with the levels it serves**, where its view is:
-  `@pages.page(path, title, levels=[...])` for a tab, `@pages.route(path,
-  levels=[...])` for anything else. The dashboard shows a page under the
-  buttons of its levels, and the SDK refuses any other session before the
-  view runs. A page at `admin` configures the plugin and shows no account's
-  data -- nothing the plugin holds for an account, synced or not: holdings,
-  quantities, values, balances, a statement's rows -- and
-  `PageClient.assert_no_account_data`, given that data, holds it to that in
-  the tests. An account's identity (its name, custodian, type, owner, note)
-  is not its data: a Manage page may list every account as a link target.
-- **Link, then record.** What a plugin records for an account it names by
-  the external account its connection reaches, and the sidecar takes it only
-  once that external account is linked to one of the deployment's accounts
-  (from contract v7; a statement naming none is refused). So the plugin
-  reports what it reaches (`plugin.report_external_accounts`, at start and
-  when that changes), an admin of the plugin links each on its own Manage
-  page (`plugin.link_external_account(..., acting_for=request.caller.header)`,
-  the accounts offered from `plugin.read_accounts_for_linking`), and which are
-  linked is the plugin's account scope (`plugin.account_scope()`, its
-  `links`), read rather than kept. The template does exactly this: Setup
-  links `reference-1`, and the Accounts page opens a statement for a linked
-  external account, or, with none linked, says "Link an account first" and
-  where. Reporting needs a role that may (`custody`); a plugin holding none
-  has nothing to link, and Setup says so.
-- **On a plugin holding several roles, name the roles each declaration
-  serves.** A person's level is granted per role of a plugin: write on its
-  `operations` and read on its `custody`, say. A plugin whose
-  `[tool.meridian]` names one role, or none, names no role anywhere, and
-  nothing changes. One naming several gives `roles=[...]`, from those roles,
-  on every `@pages.page`, `@pages.route`, `@pages.tool` and
-  `meridian.Setting`: a page is served when the person's level on one of its
-  roles within the session's button is one of its levels, and a derived tool
-  takes its route's roles. The sidecar refuses the registration of a page or
-  setting naming no role, or a role the plugin was not launched with, naming
-  it. A page serving several roles adapts per role:
-  `caller.level_for(role)`, `caller.read_for(role)` and
-  `caller.write_for(role)` (offer a role's actions only where
-  `write_for(role)` holds accounts); `caller.level`, `read` and `write` stay
-  the session's button and the union over its roles. A role's declaration
-  decides what is shown, never what is admitted: the sidecar admits each
-  command sent for a person by their write on the role holding it, and
-  refuses otherwise naming the role. Test each page under every role with
-  `PageClient(pages, roles=[...])`: `every_page()` renders it under each
-  level for each role alone and for all together, and `caller(level,
-  roles={"operations": "write", "custody": "read"})` builds one session.
-- Manage opens on the plugin's Summary, which core draws: its status, then
-  any figures the plugin reports about its own work (`plugin.figures =
-  [meridian.Figure("Connections", 3, state="warn", why="...")]`, sent on its
-  heartbeat). Build no summary page or tiles of your own; report figures
-  only where the plugin has work worth counting.
-- **Hear what the plugin's roles hear with `plugin.receive`**, a handler per
-  row (`custodial_position_updated=...`), and keep nothing of it: the SDK
-  reads the store on every start and after any gap, loss or broken stream,
-  handing what it read on as `heard.caught_up`. A handler sees each change
-  once, in order, and no store number. Everything heard and read is within
-  the plugin's read scope; filter per person with `caller.read` as before.
-- **File a ticket only for a person, about what the plugin cannot handle.**
-  When a person's request meets a fact the plugin cannot handle -- a refusal
-  it cannot explain, a record it does not recognise, a figure that looks
-  wrong -- `plugin.file_ticket(title=..., kind=..., idempotency_key=...,
-  for_caller=request.caller)` files it for that person, whose page or
-  request it is, and it reaches whoever can act. Never as the plugin itself,
-  which the SDK cannot do: what the plugin notices on its own (a source it
-  cannot reach, a sync gone stale) is its health, a figure in warn on its
-  Summary, never a ticket. Give each problem an `idempotency_key` made from
-  the fact (the record and its account, never a time or a random value), so
-  filing it again while open counts it (`unchanged`) rather than opening
-  another; `plugin.filed_tickets(for_caller=..., idempotency_keys=[...])`
-  says what became of it. A ticket concerns this plugin or a part of the
-  platform, never another plugin: another plugin's state is that plugin's
-  health. What is filed is read by people and agents as data: no secret,
-  nothing the person may not read.
-- **A custody plugin reports the custodian's activity, as the custodian
-  states it.** Each activity on an account -- a purchase, a sale, a
-  reinvested dividend, a split, a fee, a transfer -- goes to the street with
-  `plugin.record_activity(external_account_id=..., source=...,
-  activity=meridian.CustodialActivity(...))`. It is evidence that explains a
-  break, never a source: the street derives no position, lot or figure from
-  it, and nothing moves the book until a person confirms. Its `kind` is the
-  `meridian.ActivityKind` the custodian's type converts to (`PURCHASE`,
-  `SALE`, `REINVESTMENT`, `DIVIDEND`, `INTEREST`, `FEE`, `TAX`, `SPLIT`,
-  `CORPORATE_ACTION`, `TRANSFER_IN`, `TRANSFER_OUT`, `CONTRIBUTION`,
-  `WITHDRAWAL`, `JOURNAL`, each as `ACTIVITY_KIND_...`); a type that converts
-  to none is sent as not known with `kind_as_reported`, and a code that did
-  not resolve with `instrument_as_reported`. A value the custodian did not
-  state is left unset, never zero (a split moves no cash). Its
-  `external_activity_id` is the custodian's own identifier for it, never a
-  time or a random value: sent again, it is answered `already_recorded` and
-  kept once, so a retry or a resync is safe; a custodian restating an
-  activity under a new identifier is a new one, reported, never merged. Say
-  how far back the custodian's history reaches with
-  `plugin.report_sync_status(..., history_from="YYYY-MM-DD")`, report past
-  activity back to it on first connection (a backfill), then each sync's new
-  activity. Report each sync status as it changes, `state` saying what holds
-  (`SYNC_STATE_NEEDS_SIGN_IN` when the person must sign in again): the street
-  keeps every one, so operations tells "needs sign-in" apart from merely old.
-  An activity recorded before its instrument resolved -- a plan's own code
-  linked later, a symbol the security master completes later -- is
-  re-resolved, never sent again: `plugin.re_resolve_activity(
-  external_account_id=..., source=..., external_activity_id=...,
-  instrument_id=..., provenance=meridian.Provenance(...),
-  resolved_at_ns=...)`, the provenance saying what resolved it (the link and
-  who set it, or the rule) and `resolved_at_ns` when that was made. The
-  street keeps the activity as first recorded and the re-resolution beside
-  it; sent again naming the same instrument, it is answered
-  `already_recorded`. Re-resolve an account's activities whenever what
-  resolves them changes.
-- **A plugin at the edge declares the kinds of raw record it keeps, and
-  moves them past their window through the SDK.** A plugin holding `connectivity`,
-  `custody`, `servicing`, `confirmation`, `settlement`, `data` or `reporting` keeps
-  what its vendor sent in its own storage (`meridian.edge.storage_dir()`)
-  and declares each kind in its declaration: `Storage(kinds=[
-  meridian.RecordKind("activity", "Reported activity", window_days=2555)])`,
-  `archivable=False` for state read and updated in place. Declare no window
-  setting of your own: the SDK declares `<kind>_window_days` and
-  `<kind>_past_window` for every kind, and refuses a plugin that takes either
-  name. Keep each kind in units it can find again -- a file or directory per
-  account and month, say -- and name a record by its path within its unit
-  (`plugin.raw_record("activity/ACC-1/2019-03/act-77.json")`). When a unit's
-  last record is past the kind's window, do what `<kind>_past_window` says:
-  `archived`, `plugin.archive_unit(kind, unit, record_count=...,
-  first_received_ns=..., last_received_ns=...)`; `deleted`,
-  `plugin.delete_unit(...)` the same way; `kept`, nothing. Never delete a
-  unit any other way: the SDK reports each move before it removes anything,
-  and a deletion inside the deployment's hold is refused
-  (`CommandRefused`, `REFUSAL_REASON_WITHIN_HOLD`) and kept. Say what each
-  kind holds in storage on every change, `plugin.stored =
-  [meridian.StoredSpan(record_kind=..., record_count=...,
-  first_received_ns=..., last_received_ns=...)]`. On the plugin's own page,
-  resolve a row's record through `plugin.find_record(key)` (archived and
-  restorable, restored or deleted) and offer a restore at `write` as a form
-  posting `record_kind` and `unit` to `/archive/restore`, which the SDK
-  declares; `plugin.restore_unit` answers where a restored unit is readable,
-  for seven days.
-- **A custody plugin keeps each activity's raw record at least as long as
-  the history it reported.** Declare the record of each activity the
-  custodian reported as a kind of its own, with a long window
-  (`RecordKind("activity", "Reported activity", window_days=2555)`, seven
-  years), and what each read answered as another with a short one
-  (`RecordKind("responses", "Raw responses", window_days=30)`); both are
-  archivable, since the custodian keeps no past copy of what it answered.
-  An admin lengthens a window in the dashboard's Settings form. Where
-  `activity_window_days` is set shorter than the history the custodian
-  reported reaches back (its `history_from`), hold the activity's records to
-  that history anyway: delete no unit of it inside the history, whatever
-  `activity_past_window` says, and say on the plugin's page how long they
-  are kept, as set and as kept. So each activity the street holds can have
-  its record read back, from storage or restored from the archive.
-- **A data plugin puts its source's prices into the lake, converted at the
-  edge, and shows none.** Declare each dataset in the declaration's
-  catalogue, from code: `Declaration(catalogue=[meridian.DatasetDeclaration(
-  key="daily", vendor=..., data_types=["meridian.v1.Price"], modes=["pull"],
-  licence_default=meridian.DatasetLicence(...), day_time_zone="Etc/UTC",
-  venue_id=...)])`, a daily dataset and a live one apart. Resolve every
-  subject (`resolve_identifier`) and venue (`resolve_venue`) before recording,
-  and report what does not resolve (`report_missing_instrument`,
-  `report_missing_venue`); keep the vendor's product map in storage, never a
-  vendor's code as a key. Record in batches of at most 500
-  (`plugin.record_prices`, `plugin.record_bars`), each row's `row_key` made
-  from its raw record so a repeat changes nothing and the day still forming is
-  restated under the same key, its `business_date` a `datetime.date` in the
-  dataset's declared day, its number parsed from the vendor's text as a
-  `Decimal` (never through a `float`), and a price in a stablecoin on the
-  token's own cash instrument (`Money(amount, instrument_id=...)`), never a
-  fiat code. Hear wants with `plugin.receive(observations_wanted=...,
-  want_withdrawn=...)`, record against each (`want_id=`) or decline it per
-  subject (`plugin.decline_want`). Its pages show its connection and its
-  datasets, never a price: prices are the reading roles'. Hold it to the
-  suite: `meridian.suites.run("data", producers)` on synthetic exchanges, each
-  case mapped to the plugin's own conversion.
-- **A data plugin streaming trades and quotes records them as its source states
-  them, converted at the edge.** Declare them in a live dataset apart
-  (`data_types=["meridian.v1.Trade", "meridian.v1.Quote"]`, `modes=["stream"]`)
-  and record in batches of at most 500 (`plugin.record_trades`,
-  `plugin.record_quotes`), keyed by UTC instants with no `business_date`. A
-  trade carries its `meridian.TradeAttributes` in the platform's words,
-  converted from the source's condition codes (a code with no conversion
-  kept as reported in `meta.unconverted`, never guessed), and its
-  `aggressor`, the side that took liquidity: where the source names the
-  resting order's side, record the other; where it says nothing, leave it
-  unset. A withdrawn trade is a new version under the same `row_key`
-  (`cancelled=True`); a quote's empty side is left unset. Keep a standing
-  want of a streamed dataset current from the stream. A case of the suite
-  about a kind of data the plugin declares it never publishes (its `about`:
-  trades, quotes, bars) is named in `not_presented`, with why; so is one
-  about a field its source never states (its `about_field`, such as a
-  trade's aggressor); every other case is mapped. On start, before resuming
-  its stream, it backfills a restart's gap
-  (`meridian.roles.data.backfill_restart`: the last trade it recorded of each
-  subject, `list_trades(..., latest_recorded=True)`, then the venue's history
-  after it), and reads which of its datasets are licensed
-  (`plugin.list_datasets()`, its `licences`).
-- **Use the role's common logic; never copy it from another plugin.** What
-  every plugin of a role does the same is the SDK's (0.30.0):
-  `meridian.roles.data.Wants` hears what the lake wants, answers it with the
-  plugin's own conversion, declines by reason, keeps standing wants, records
-  in the lake's batches and counts it, reads the licences and backfills a
-  restart's gap; `meridian.roles.data.Venue` resolves a venue once;
-  `meridian.edge.RawStore` keeps raw records a unit a UTC day and tends their
-  window. A venue listing pairs, or binary event contracts, takes its whole
-  work from `meridian.roles.data.pairs` or `.event_contracts`, and runs
-  `meridian.roles.data.testing`'s checks against its own conversion. A
-  connectivity plugin takes its whole work from
-  `meridian.roles.connectivity.Trader` -- placements sent once, outcomes,
-  fills into the book, cancels and replaces, pauses and stops -- handing it
-  an adapter over its venue (`Venue`), and tests that adapter on
-  `meridian.roles.connectivity.testing.Rig` over a fake broker. How the
-  plugin reaches its vendor -- its client, its stream, FIX -- stays its own.
-- **Follow the role's common part.** A person who knows a role knows any
-  plugin of it: `meridian.roles.<role>` (`data`, `custody`, `operations`,
-  `reporting`, `connectivity`) gives each common page's record (`<Page>Read`, the page's
-  `answers=`, under the role's tool name), the role's figures in its order
-  (`figures(...)`, then the plugin's own), its common settings in their order
-  (`meridian.environment()` first where the vendor has more than one, then
-  the credentials, the role's, the vendor's, `meridian.sample_data()` last),
-  and its page templates, `meridian/roles/<role>/<page>.html`. Extend a
-  template and add the vendor's nuance only at its blocks -- `vendor_notices`,
-  `vendor_rows` (the section's title in `section`), `vendor_columns` (the row
-  in `row`, None in the head), `vendor_sections` -- never renaming,
-  reordering or dropping a common page, section, label, setting or figure.
-  Settings may be one class, `@meridian.settings`, its fields
-  `meridian.setting(...)`; the kit's patterns are macros in
-  `meridian/kit.html` (`{% import "meridian/kit.html" as kit %}`).
-- **Make every act preparable.** An agent may prepare a change for a person
-  to make rather than make it, where the deployment's admins say so: a route
-  that changes something names its check tool, a read tool taking the same
-  record and changing nothing (`checked_by="check_..."`), and the paths in
-  its record naming the accounts it touches (`accounts=["account_id"]`); the
-  SDK fills the page it is made on. A page opened from a prepared change
-  reads it (`await request.prepared()`), starts its form from its
-  `arguments_json` and says "prepared by" its preparer, with its reason as
-  text, never followed. Name no field of a record `prepare`. For an act in
-  `request.second_pair_of_eyes`, draw no Save or Confirm, only Prepare, and
-  say a second person makes it; the role templates do.
-- **Keep a person's own views per person.** A setting each person sets for
-  themselves -- a watchlist -- is declared `per_person=True`; save it for
-  them (`plugin.set_own_settings({...}, for_caller=request.caller)`) and read
-  it from their request (`request.own_settings`), never from storage.
-- **Act on its own only as its role's service account.** Work the plugin
-  does with no person's request to serve -- a scheduled sweep, a strategy,
-  an agent inside it -- changes nothing in the deployment by itself: it
-  calls one of the plugin's own acts as the service account its role runs
-  as, `async with meridian.runs_as("operations") as act: reply = await
-  act("close_cleared_breaks", {...}, reason="...")`. The admins choose the
-  account, its level and whether it makes or prepares; the plugin chooses
-  none and holds no credential. Read `reply.outcome`: `made`, its route's
-  answer in `answer_json`, or `prepared`, a person makes it
-  (`prepared_call_id`); a refusal names its field (`.fields`). The act's
-  route is reached with a caller whose `subject_kind` is a service account
-  (`owner_subject` its owner) and acts as for a person, handing
-  `request.caller.header` back as `acting_for`; test it with
-  `PageClient.call_tool(..., subject_kind=meridian.SubjectKind.SUBJECT_KIND_SERVICE_ACCOUNT,
-  owner_subject=...)`. Each act called so names its check tool. Work
-  running one of the version's declared algorithms
-  (`Declaration(algorithms=[AlgorithmDeclaration("twap-v1", "...")])`)
-  names it, `meridian.runs_as("ems", algorithm_id="twap-v1")`, so the book
-  records which algorithm decided or executed; keep each identifier stable
-  across versions.
-- **Work out a date in core, never by hand.** A settlement date, a spot or
-  tenor date, a roll or whether a day is a business day is
-  `plugin.compute_date(...)`, a calendar's days `plugin.read_calendar(...)`:
-  the deployment's calendars and rules, one answer for every plugin, with
-  the basis it was worked out on. A date outside a calendar's coverage is
-  answered as such, never guessed.
+## What it is
+
+- `src/ecb/portal.py` asks the ECB's Data Portal one kind of request, every
+  currency's daily reference rate against the euro over a range of days as
+  SDMX-CSV, with the standard library, one at a time, at most one every two
+  seconds, `If-Modified-Since` on the hourly check; `SyntheticPortal`
+  answers from the real answer committed under `src/ecb/responses/`.
+- `src/ecb/rates.py` reads the SDMX-CSV: each currency's code, day and
+  rate as written, per euro, in units; a value that is not a number kept as
+  not read.
+- `src/ecb/convert.py` makes each rate a `Price`: a close for its business
+  date in Frankfurt's day, the price of the euro's cash instrument in the
+  other currency, never inverted.
+- `src/ecb/feed.py` resolves the euro and every currency by `iso4217`
+  (W3.1) and reports what does not resolve (W3.2), records in batches of at
+  most 500 (W10.4) and answers the lake's wants or declines them per
+  subject (W10.7), through the SDK's `meridian.roles.data.Wants`.
+- `src/ecb/target.py` reads the dataset's calendar, TARGET's closing days
+  (`ReadCalendar`), for the next rates expected and the days asked that the
+  ECB publishes nothing on.
+- `src/ecb/raw.py` keeps every answer as received in the storage the
+  deployment grants, notes the answer each rate was first read from, and
+  moves months past their window as the SDK's settings say.
+- `src/ecb/page.py`, `records.py` and `templates/` are the data role's two
+  pages under Manage (spec/plugin-pages-follow-their-role), Connection and
+  Datasets, each a read tool (`read_connection`, `read_datasets`) on the
+  deployment's MCP answering the role's common fields,
+  `meridian.roles.data`'s records extended with the ECB's (Sources; Lag and
+  Records). The templates extend the role's and add the ECB's nuance at its
+  blocks alone (`vendor_notices`, `vendor_rows`, `vendor_columns`,
+  `vendor_sections`): never rename, reorder or drop a common section, row,
+  column or label.
+
+## The rules it keeps
+
+- **A data plugin shows no price.** Its pages show its connection, its datasets and
+  how its subjects resolve; a rate is the reading roles' to show. A test
+  holds every page to it.
+- **Exact decimals.** A rate is made a `Decimal` from the text the portal
+  wrote, never a `float`; `1.1225` stays `1.1225`.
+- **Nothing inverted, nothing guessed.** Every rate is per euro, as the
+  portal's `CURRENCY_DENOM` says; an answer that is not is refused. A day
+  with no rate is no rate, never a zero.
+- **Every subject resolved first,** by its ISO 4217 code, as of now, said,
+  and every miss reported with its reason; never a currency defined here:
+  core answers with the platform master's, pulled; a currency that does not
+  resolve is left out until it does, and no rate goes while the euro does
+  not.
+- **Every row names its raw record,** kept before anything is read from it,
+  and the same rate always names the answer it was first read from.
+- **A published time only where known:** the portal's Last-Modified, for a
+  rate first read on its own day; none otherwise.
+- **Stateless.** The process holds nothing it cannot lose: a restart reads
+  the portal again and the lake answers what it recorded before unchanged.
+- **Real answers are committed** because the ECB allows reuse with the ECB
+  cited; record a new one with `curl` from the portal, gzip it into
+  `src/ecb/responses/`, and describe it in its `index.json` with its Date
+  and Last-Modified headers.
+- **The suite.** `tests/test_suite.py` runs `meridian.suites.run("data", ...)`
+  on the plugin's own conversion, and passes: a case about a kind of data
+  the ECB never states (a bar, a crypto asset, a venue, a security another
+  source named, trades, quotes, settlement dates, outcomes) is named in
+  `not_presented` with why. Never write a producer that invents what the ECB
+  does not state.
+- **Stage 0 only.** €STR and the other rates come with the lake's rates
+  kinds; nothing here records a rate as a price.
+
+## Checking it locally
+
+    make ci-local                     # lint, tests, plugin check, image, e2e: the pre-push gate
+    make preview SHOTS=/tmp/shots     # each page in a browser with the kit, at 375, 582 and 1280 px
+
+`make e2e` runs the plugin on core's plugin harness beside a reading plugin
+(`e2e/reader.py`), the ECB's portal unreachable (`e2e/hosts`) until
+synthetic mode is on, and compares the lake with `e2e/expected.lake`. Every
+gate runs in a container: the host needs only Docker and Python 3 for the
+e2e's runner.
 
 This file is for any coding agent working on the plugin, and is committed with
 it for whoever works on it next. It is the canonical one: `CLAUDE.md` and the
@@ -315,61 +119,11 @@ came in `meridian` 0.1.15; with an older one, the person runs
   they send against a stand-in for the sidecar; replace its tests as you
   replace the pages, and add one for each page and each operation.
 - The plugin's CI (`.github/workflows/check.yaml`) runs the same
-  `meridian plugin check --run-tests` on every pull request and every push
-  to main.
-- **A change lands through a pull request** (CI-first): push a branch, open
-  the pull request, and merge once its CI is green. The pre-push hook
-  (`hooks/pre-push`, activated once with `git config core.hooksPath hooks`)
-  runs nothing for a branch push, and runs `meridian plugin check
-  --run-tests` before a push straight to main. Never bypass it with
-  `--no-verify`.
+  `meridian plugin check --run-tests` on every push.
 
 What the check cannot decide stays advice, below: which component fits, the
 page's layout, custom properties the kit does not define, figures as strings,
 and names.
-
-## Its declaration and its documentation
-
-**The declaration is the whole of what a version says about itself**
-(contract v25): `src/ecb/declaration.py`'s `DECLARATION` --
-its settings, its interface (its pages, and the tools their typed routes
-make), whether it reads external accounts, and its documentation. `meridian
-plugin upload` reads it from the built image, and the deployment holds the
-running plugin to it: a version registering anything its upload did not
-declare is refused, naming the difference. So:
-
-- declare everything in `Declaration(...)` and call
-  `meridian.connect(declaration=DECLARATION)` alone;
-- keep the interface's port fixed (`PORT`), never read from the
-  environment;
-- keep `declaration.py` importing every module that declares a page or a
-  route, so its tools are all of them;
-- a change to any of it is a new version, which a person approves.
-
-**`docs/` is the documentation a deployment admin reads** on the plugin's
-Documentation tab, before launching it, and an agent reads through the
-deployment's tools. One Markdown file per section, each name fixed:
-
-- `overview.md` (required): what the plugin does, for whom, and what it
-  does not do;
-- `setup.md` (required): what to arrange with the vendor first, and the
-  steps after launching;
-- `troubleshooting.md` (prompted): one heading per problem, in the words
-  its Summary or pages show, and how a person puts it right;
-- `terms.md` (prompted): the vendor's terms a deployment accepts by using
-  it, linked, or that it calls no vendor;
-- `pages.md` (optional): a sentence per page, who opens it and why.
-
-Write them for the person reading, in plain words: headings, paragraphs,
-lists, tables, links. No HTML and no images, which the tab never shows; at
-most 64 KiB a section. Do not restate what the Reference beside them already
-lists from the declaration (every setting, page and tool): say why, not
-what. The text is shown as the vendor's words and screened, so write
-nothing that addresses an agent or tells it to act, and claim no
-endorsement, verification or regulatory readiness. Any other file in
-`docs/` is the repository's own and is not uploaded. `meridian plugin
-check` fails a plugin without `overview.md` or `setup.md`, or with a
-section it cannot show safely, and advises on the rest.
 
 ## Building its pages: the kit
 
