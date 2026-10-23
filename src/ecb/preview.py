@@ -5,11 +5,13 @@ for looking at them without a deployment.
     python -m ecb.preview datasets > preview/datasets.html
 
 The plugin's work runs on the SDK's suite recorder in place of a sidecar --
-every currency resolved to an instrument the recorder names, every batch
-recorded -- against the answer committed under responses/, at 16:30 UTC on
-19 October 2026: the current rates read, a want for 25 September answered,
-one for Saturday 17 October declined (the ECB publishes nothing on a
-weekend), and a standing want kept current. Each page links the kit where
+every currency resolved to an instrument the recorder names, each €STR
+record to one the platform seeded, every batch recorded -- against the
+answers committed under responses/, at 16:30 UTC on 19 October 2026: the
+current rates and €STR read, €STR's history backfilled from the recording,
+a want for 25 September answered, one for Saturday 17 October declined (the
+ECB publishes nothing on a weekend), a standing want kept current, and a
+want of €STR for 1 October answered. Each page links the kit where
 the dashboard serves it, /.meridian/ui/<version>/: served beside the kit it
 is styled (meridian-ui's `make serve`, or `make preview SHOTS=...`, which
 checks each in a browser); opened on its own it is the page without the kit,
@@ -29,6 +31,8 @@ from meridian.receive import Heard
 from meridian.suites import Recorder
 from meridian.testing import PageClient
 
+from .estr import SERIES
+from .estr_feed import EstrFeed
 from .feed import Feed
 from .page import CONNECTION, DATASETS, hold, pages
 from .portal import SyntheticPortal
@@ -61,24 +65,45 @@ def _want(want_id: str, subject: str, day: str = "", standing: bool = False) -> 
     )
 
 
-def _feed() -> Feed:
-    return Feed(Recorder("ecb"), SyntheticPortal(lambda: AT), RawStore(), now=lambda: AT)
+def _feed() -> tuple[Feed, EstrFeed]:
+    recorder = Recorder("ecb")
+    seeded = {s.code: f"INS-{s.isin}" for s in SERIES}
+
+    def resolved(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
+        named = params.identifiers[0]
+        if named.source == "ecb":
+            return ops.ResolveIdentifierResult(found=True, instrument_id=seeded[named.value])
+        return ops.ResolveIdentifierResult(found=True, instrument_id=f"INS-{named.value}")
+
+    recorder.answer("ResolveIdentifier", resolved)
+    recorder.answer("RecordRates", lambda p: ops.RecordRatesResult(recorded=len(p.rates)))
+    feed = Feed(recorder, SyntheticPortal(lambda: AT), RawStore(), now=lambda: AT)
+    return feed, EstrFeed(feed)
 
 
-async def synthetic_feed() -> Feed:
-    """A feed as sample data leaves it, on the recorder."""
-    feed = _feed()
+async def synthetic_feed() -> tuple[Feed, EstrFeed]:
+    """The feeds as sample data leaves them, on the recorder."""
+    feed, estr = _feed()
     await feed.check()
+    await estr.check()
     euro = feed.euro()
     await feed.on_want(_want("want-0925", euro, "2026-09-25"))
     await feed.on_want(_want("want-1017", euro, "2026-10-17"))
     await feed.on_want(_want("want-standing", euro, standing=True))
-    return feed
+    rate = ops.ObservationsWantedEvent(
+        want_id="want-estr-1001",
+        dataset="ecb:ecb_estr",
+        data_type="meridian.v1.Rate",
+        subjects=[ops.SubjectRef(entity_id=estr.status.records["ESTR"].instrument_id)],
+        business_date="2026-10-01",
+    )
+    await feed.on_want(Heard(row="ObservationsWanted", message=rate))
+    return feed, estr
 
 
 def render(page: str) -> str:
-    feed = _feed() if page.endswith("-first") else asyncio.run(synthetic_feed())
-    hold(feed)
+    feed, estr = _feed() if page.endswith("-first") else asyncio.run(synthetic_feed())
+    hold(feed, estr)
     query = {"q": SEARCHED} if page == "datasets-search" else {}
     answer = PageClient(pages).get(PAGES[page], "admin", **query)
     if answer.status != 200:

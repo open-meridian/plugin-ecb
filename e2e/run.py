@@ -1,5 +1,5 @@
 """`make e2e`: the plugin on the plugin harness of the runtime it pins
-(contract v26), beside `reader`, a reporting plugin (e2e/reader.py) entitled
+(contract v27), beside `reader`, a reporting plugin (e2e/reader.py) entitled
 to its dataset, and the harness's admin. Run from the repository's root by
 the Makefile, which builds the image and writes the harness's plugins first;
 standard library only.
@@ -30,6 +30,14 @@ standard library only.
 7. `store lake` is e2e/expected.lake, each subject named by its ISO code.
 8. A new container: it reads the rates again and records nothing twice;
    the lake is unchanged.
+
+€STR (`ecb_estr`, 0.2.0) is proven up to recording: core's harness at
+c786b9a does not hold the platform's seeded `ecb:` referential records yet,
+so sample data's €STR is read (its latest day 22 October 2026), each of its
+seven records asked of the deployment and reported missing -- `miss|ecb|7`
+in the lake, never minted -- and no row recorded; core lists `ecb:ecb_estr`
+as declared, and `read_datasets` names the seven not held. Recording them
+is proven by the unit tests and the data suite until the harness seeds them.
 """
 
 import json
@@ -44,6 +52,7 @@ COMPONENTS = ".e2e/components.log"
 COMPOSE = ["docker", "compose", "-p", PROJECT, "-f", ".e2e/harness/compose.yaml",
            "-f", ".e2e/harness/plugins.yaml", "-f", "e2e/plugin.yaml"]
 DATASET = "ecb:ecb_fx"
+ESTR = "ecb:ecb_estr"
 
 
 class Failed(Exception):
@@ -178,6 +187,24 @@ def run():
          and not entry.get("day_end_minute") and entry.get("cadence") == 86400
          and entry.get("calendar_id") == "CAL-01M4VF0F5ZRTY7AZ3B36ZVWN11",
          f"step 3, core lists the catalogue as declared: {listed.get(DATASET)}")
+    # €STR, up to recording: read, its seven records asked and not held.
+    estr_entry = listed.get(ESTR, {}).get("catalogue_entry", {})
+    must(estr_entry.get("modes") == ["push", "pull"] and estr_entry.get("history") == 2600
+         and "meridian.v1.Rate" in estr_entry.get("data_types", [])
+         and estr_entry.get("calendar_id") == "CAL-01M4VF0F5ZRTY7AZ3B36ZVWN11",
+         f"step 3, core lists ecb_estr as declared: {listed.get(ESTR)}")
+    estr_source = next((s for s in connection["sources"] if s["dataset"] == ESTR), {})
+    estr_read = until(60, lambda: (lambda s: s if s.get("last_release") == "2026-10-22" else None)(
+        next((s for s in call(read_connection)["sources"] if s["dataset"] == ESTR), {})),
+        f"step 3, €STR's sample read to 22 October: {estr_source}")
+    rates = call(read_datasets)["rates"]
+    must(len(rates) == 7 and all(not r["instrument_id"] and r["miss"] for r in rates)
+         and rates[0]["code"] == "ESTR" and rates[0]["series"] == "EST.B.EU000A2X2A25.WT",
+         f"step 3, the seven €STR records asked and not held: {rates}")
+    must("Waiting: 7 of 7 records not held" in estr_read["history"],
+         f"step 3, the history waits for the records: {estr_read}")
+    must(f"row|{ESTR}|" not in store_lake() and "miss|ecb|7" in store_lake(),
+         "step 3, no €STR row recorded, its seven records reported missing")
 
     # 4. Licensed and entitled.
     runner("licence", DATASET, "kept=true", "retention_days=0", "derived_use=true", "display=true",
@@ -229,8 +256,12 @@ def run():
     until(120, lambda: "Mon 19 Oct" in page("ecb", "admin", "/"),
           "step 8, the new container did not read the rates again")
     time.sleep(5)
+    # The new container asks for €STR's records again, and counts its misses
+    # again: compared without them.
+    def rows_only(lines):
+        return "".join(line + "\n" for line in lines.splitlines() if not line.startswith("miss|"))
     again = named(store_lake(), codes)
-    must(again == got, "step 8, the new container recorded something twice:\n"
+    must(rows_only(again) == rows_only(got), "step 8, the new container recorded something twice:\n"
          + subprocess.run(["diff", "-u", "-", ".e2e/lake"], input=again, capture_output=True, text=True).stdout[-2000:])
     logs = compose("logs", "--no-color", "ecb").stdout
     must("0 recorded, 0 restated, 203 unchanged" in logs,
@@ -245,8 +276,10 @@ def run():
           f"core listing {DATASET} as declared; licensed and entitled; the euro priced in 29 currencies "
           f"(dollars 1.1225), each a close on its business date, the portal's published time on the day "
           f"read on its day; 25 September wanted and recorded, 31 July declined source silent and the "
-          f"dollar's own instrument not covered; `store lake` as e2e/expected.lake ({rows} rows); and a "
-          f"new container recording nothing twice, its licence read on start")
+          f"dollar's own instrument not covered; €STR read to 22 October, its seven records asked "
+          f"and reported missing (the harness holds no ecb: record yet), none recorded; `store "
+          f"lake` as e2e/expected.lake ({rows} rows); and a new container recording nothing twice, "
+          f"its licence read on start")
 
 
 def main():

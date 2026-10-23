@@ -19,7 +19,7 @@ from __future__ import annotations
 import meridian
 from meridian.declaration import Declaration, Storage
 
-from .declared import ECB_FX_DATASET, RESPONSES_KIND
+from .declared import ECB_ESTR_DATASET, ECB_FX_DATASET, RESPONSES_KIND
 from .page import TITLE, pages
 from .raw import MOST_WINDOW_DAYS
 from .settings import DECLARED
@@ -30,7 +30,7 @@ PORT = 8000
 DECLARATION = Declaration(
     settings=DECLARED,
     storage=Storage(retention_days=MOST_WINDOW_DAYS, kinds=[RESPONSES_KIND]),
-    catalogue=[ECB_FX_DATASET],
+    catalogue=[ECB_FX_DATASET, ECB_ESTR_DATASET],
     interface=meridian.Interface(port=PORT, title=TITLE, pages=pages),
     documentation="docs",
 )

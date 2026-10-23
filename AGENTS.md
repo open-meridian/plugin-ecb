@@ -1,23 +1,26 @@
 # meridian-ecb
 
-The European Central Bank's euro foreign exchange reference rates as an Open
-Meridian data plugin, in Python on the open-meridian SDK (0.31.0, contract
-v26). It runs beside a sidecar in a Meridian deployment and puts each TARGET
-business day's reference rates into the deployment's lake, each rate the
-price of the euro's cash instrument in the other currency, as the ECB quotes
-it. What it may publish and subscribe to comes from its one role, `data`,
-declared in `pyproject.toml`, once a deployment admin approves it. It is
-stage 0 of the ECB's data plugin: meridian-design's
+The European Central Bank's euro foreign exchange reference rates and euro
+short-term rate as an Open Meridian data plugin, in Python on the
+open-meridian SDK (0.32.1, contract v27). It runs beside a sidecar in a
+Meridian deployment and puts each TARGET business day's reference rates into
+the deployment's lake, each rate the price of the euro's cash instrument in
+the other currency, as the ECB quotes it (`ecb_fx`), and each day's €STR,
+its compounded averages and its compounded index as rates (`ecb_estr`). What
+it may publish and subscribe to comes from its one role, `data`, declared in
+`pyproject.toml`, once a deployment admin approves it. It is stages 0 and 1
+of the ECB's data plugin: meridian-design's
 `spec/a-public-rates-and-filings-data-plugin.md` (rulings 343 to 349 made it
 one plugin per publisher's feed).
 
 ## What it is
 
-- `src/ecb/portal.py` asks the ECB's Data Portal one kind of request, every
-  currency's daily reference rate against the euro over a range of days as
-  SDMX-CSV, with the standard library, one at a time, at most one every two
-  seconds, `If-Modified-Since` on the hourly check; `SyntheticPortal`
-  answers from the real answer committed under `src/ecb/responses/`.
+- `src/ecb/portal.py` asks the ECB's Data Portal two kinds of request, every
+  currency's daily reference rate against the euro and every €STR series,
+  each over a range of days as SDMX-CSV, with the standard library, one at
+  a time, at most one every two seconds, `If-Modified-Since` on the hourly
+  check; `SyntheticPortal` answers from the real answers committed under
+  `src/ecb/responses/`.
 - `src/ecb/rates.py` reads the SDMX-CSV: each currency's code, day and
   rate as written, per euro, in units; a value that is not a number kept as
   not read.
@@ -28,7 +31,14 @@ one plugin per publisher's feed).
   (W3.1) and reports what does not resolve (W3.2), records in batches of at
   most 500 (W10.4) and answers the lake's wants or declines them per
   subject (W10.7), through the SDK's `meridian.roles.data.Wants`.
-- `src/ecb/target.py` reads the dataset's calendar, TARGET's closing days
+- `src/ecb/estr.py` reads €STR's SDMX-CSV: the seven series the platform
+  seeds a record for (€STR, its five compounded averages, its index), with
+  €STR's volume, count and percentiles; `src/ecb/estr_feed.py` records them
+  as `Rate`s through the SDK's `meridian.roles.data.rates` (resolving each
+  record by its seed's symbol at `ecb`, building the rows, recording them
+  through the same `Wants`), backfills the history once, and answers
+  `ecb_estr`'s wants, which `feed.py` hands it (`Feed.answers`).
+- `src/ecb/target.py` reads the datasets' calendar, TARGET's closing days
   (`ReadCalendar`), for the next rates expected and the days asked that the
   ECB publishes nothing on.
 - `src/ecb/raw.py` keeps every answer as received in the storage the
@@ -62,7 +72,13 @@ one plugin per publisher's feed).
 - **Every row names its raw record,** kept before anything is read from it,
   and the same rate always names the answer it was first read from.
 - **A published time only where known:** the portal's Last-Modified, for a
-  rate first read on its own day; none otherwise.
+  reference rate first read on its own day, and for €STR's latest day in a
+  current read, published within five days after it; none otherwise.
+- **Rates are rates.** €STR and its averages are percent `UnitValue`s with
+  their convention, the index an index level with its base, through the
+  SDK's rates helpers; never a `Price`, never a `Money` but the volume. A
+  revision is the same row key's next version: never put the published time
+  in a row key.
 - **Stateless.** The process holds nothing it cannot lose: a restart reads
   the portal again and the lake answers what it recorded before unchanged.
 - **Real answers are committed** because the ECB allows reuse with the ECB
@@ -72,11 +88,10 @@ one plugin per publisher's feed).
 - **The suite.** `tests/test_suite.py` runs `meridian.suites.run("data", ...)`
   on the plugin's own conversion, and passes: a case about a kind of data
   the ECB never states (a bar, a crypto asset, a venue, a security another
-  source named, trades, quotes, settlement dates, outcomes) is named in
-  `not_presented` with why. Never write a producer that invents what the ECB
-  does not state.
-- **Stage 0 only.** €STR and the other rates come with the lake's rates
-  kinds; nothing here records a rate as a price.
+  source named, trades, quotes, settlement dates, outcomes, a stream, a
+  curve) is named in `not_presented` with why, and the latency case waits
+  for contract v28 (ruling 518). Never write a producer that invents what
+  the ECB does not state.
 
 ## Checking it locally
 

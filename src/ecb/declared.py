@@ -32,10 +32,33 @@ it, and any past day pulled when the lake wants it:
   default on the Data sources page; the plugin says nothing of whether a
   deployment meets anyone's terms.
 
+**`ecb_estr`** (stage 1, the rates slice of contract v27). The euro
+short-term rate, its compounded averages and its compounded index (estr.py),
+each TARGET business day's pushed when the ECB publishes them, the history
+backfilled once, and any past day pulled when the lake wants it:
+
+- `vendor` the European Central Bank, no aggregator, as `ecb_fx`;
+- `data_types` rates (`meridian.v1.Rate`), with the optional fields the ECB
+  states for €STR itself: its volume, its number of transactions and its
+  25th and 75th percentiles;
+- `modes` `push` and `pull`; `cadence` a day;
+- `history` about 2,600 days, as the spec's table has it: €STR from
+  1 October 2019 (its compounded index from the same day, the averages as
+  each first had a full period);
+- its day Frankfurt's, ending at midnight, and its calendar TARGET's: the
+  ECB computes €STR for each TARGET business day and publishes it at 08:00
+  CET the next one;
+- the licence its terms suggest, as `ecb_fx`'s: kept, derived use and
+  display, citing the ECB. The contract's declared licence has no
+  attribution field the SDK writes yet, so the attribution is stated in
+  docs/terms.md and on the Datasets page, as for `ecb_fx`.
+
 **Storage:** the portal's answers (raw.py), archivable, ten years by default.
 """
 
 from __future__ import annotations
+
+from datetime import date
 
 from meridian import DatasetDeclaration, DatasetLicence
 from meridian.declaration import RecordKind
@@ -63,6 +86,34 @@ ECB_FX_DATASET = DatasetDeclaration(
     cadence=CADENCE,
     history=HISTORY,
     licence_default=DatasetLicence(kept=True, derived_use=True, display=True),
+    day_time_zone=DAY_TIME_ZONE,
+    day_end_minute=DAY_END_MINUTE,
+    calendar_id=TARGET_CALENDAR,
+)
+
+#: The €STR dataset's key: its rows name `<instance>:ecb_estr`.
+ECB_ESTR = "ecb_estr"
+#: €STR's history, in days, as the spec's catalogue states it: from
+#: October 2019, about 2,600 days.
+ESTR_HISTORY = 2_600
+#: The first day the ECB published €STR for.
+ESTR_FROM = date(2019, 10, 1)
+
+ECB_ESTR_DATASET = DatasetDeclaration(
+    key=ECB_ESTR,
+    vendor=VENDOR,
+    data_types=[
+        "meridian.v1.Rate",
+        "meridian.v1.Rate.volume",
+        "meridian.v1.Rate.transaction_count",
+        "meridian.v1.Rate.percentiles",
+    ],
+    modes=["push", "pull"],
+    cadence=CADENCE,
+    history=ESTR_HISTORY,
+    licence_default=DatasetLicence(
+        kept=True, derived_use=True, derived_use_terms="not_restricted", display=True
+    ),
     day_time_zone=DAY_TIME_ZONE,
     day_end_minute=DAY_END_MINUTE,
     calendar_id=TARGET_CALENDAR,

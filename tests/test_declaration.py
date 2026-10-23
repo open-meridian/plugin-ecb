@@ -5,11 +5,11 @@ from __future__ import annotations
 from meridian.plugin.v1 import operations_pb2 as ops
 
 from ecb.declaration import DECLARATION
-from ecb.declared import ECB_FX_DATASET, TARGET_CALENDAR
+from ecb.declared import ECB_ESTR_DATASET, ECB_FX_DATASET, TARGET_CALENDAR
 
 
-def test_one_daily_dataset_of_prices() -> None:
-    assert [d.key for d in DECLARATION.catalogue] == ["ecb_fx"]
+def test_two_daily_datasets_prices_and_rates() -> None:
+    assert [d.key for d in DECLARATION.catalogue] == ["ecb_fx", "ecb_estr"]
     assert list(ECB_FX_DATASET.data_types) == ["meridian.v1.Price"]
     modes = [ops.ObservationMode.Name(m) for m in ECB_FX_DATASET.modes]
     assert modes == ["OBSERVATION_MODE_PUSH", "OBSERVATION_MODE_PULL"]
@@ -18,6 +18,15 @@ def test_one_daily_dataset_of_prices() -> None:
     assert ECB_FX_DATASET.cadence == 86_400 and ECB_FX_DATASET.history == 10_100
     assert ECB_FX_DATASET.calendar_id == TARGET_CALENDAR
     assert not ECB_FX_DATASET.venue_id and not ECB_FX_DATASET.aggregator
+    assert list(ECB_ESTR_DATASET.data_types) == [
+        "meridian.v1.Rate",
+        "meridian.v1.Rate.volume",
+        "meridian.v1.Rate.transaction_count",
+        "meridian.v1.Rate.percentiles",
+    ]
+    assert list(ECB_ESTR_DATASET.modes) == list(ECB_FX_DATASET.modes)
+    assert ECB_ESTR_DATASET.calendar_id == TARGET_CALENDAR
+    assert ECB_ESTR_DATASET.history == 2_600
 
 
 def test_the_ecbs_terms_are_not_one_persons() -> None:

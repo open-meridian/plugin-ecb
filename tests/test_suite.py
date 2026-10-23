@@ -1,6 +1,6 @@
-"""The data suite (meridian.suites), each case the ECB's reference rates
-present mapped to the plugin's own conversion of the ECB's recorded answer,
-the whole suite passing: stage 0's cases as
+"""The data suite (meridian.suites), each case the ECB's reference rates and
+€STR present mapped to the plugin's own conversion of the ECB's recorded
+answers, the whole suite passing: stage 0's cases and the rates slice's as
 spec/a-public-rates-and-filings-data-plugin §6 lists them.
 
 The reference rates are one rate a day for each currency the ECB publishes
@@ -23,12 +23,18 @@ but the ECB does correct a published rate; the plugin records the corrected
 rate under the same row key, which the lake keeps as the row's next version.
 That is the case's outcome, and the producer gives the plugin a correction.
 
-Contract v26's `queries-the-lake-within-bounds` is required of every data
-suite, and mapped as the SDK's data template maps it: one bounded query of
-the euro's prices (`lake_query`). The plugin itself asks the lake nothing:
-it records no trades, the one kind W10.10 lets the data role query. The
-cases every suite holds that the SDK answers (a replacement, the template
-catalogue, an event group heard) are the SDK's.
+Contract v27's rates cases (`about: rates`), for €STR (estr_feed.py):
+`a-rate-fixing`, €STR itself with its volume, percentiles and convention;
+`a-same-day-revision`, the ECB revising a published €STR by 09:00, the same
+row key again with its later published time; and `an-index-level`, the
+compounded index. The ECB publishes no curve, so the four curve cases are
+not presented, each with why. Nor are contract v27's
+`records-a-datasets-liveness` (the plugin polls hourly and streams nothing)
+and `queries-the-lake-within-bounds`, about trades from v27 (the plugin
+records none and asks the lake nothing); and `reports-its-feed-delay` waits
+for contract v28 (ruling 518). The cases every suite holds that the SDK
+answers (a replacement, the template catalogue, an event group heard) are
+the SDK's.
 """
 
 from __future__ import annotations
@@ -39,14 +45,14 @@ from pathlib import Path
 from typing import Any
 
 from meridian.plugin.v1 import operations_pb2 as ops
-from meridian.roles.data.testing import lake_query
 from meridian.suites import ANSWERED_BY_SDK, Recorder, run, suite
 
+from ecb.estr_feed import EstrFeed
 from ecb.feed import Feed
 from ecb.portal import Fetched, SyntheticPortal
 from ecb.raw import RawStore
 
-from conftest import AT, DATASET, target_2026, want
+from conftest import AT, DATASET, ESTR_AT, ESTR_IDS, target_2026, want
 
 #: Why each kind of data a case may be about is never published here.
 NEVER = {
@@ -59,11 +65,43 @@ NEVER = {
     "settlement dates": "records daily rates as published; never computes a settlement date",
     "outcomes": "the ECB rates currencies: no event contract, so no outcome",
     "disputed outcomes": "the ECB rates currencies: no event contract, so no outcome disputed",
+    "streams": "it polls the ECB's portal hourly; it streams nothing",
+}
+#: The rates cases the ECB never presents: it publishes €STR, its averages
+#: and its index, and no curve.
+NO_CURVE = {
+    "a-curve-for-a-date": "the ECB publishes €STR, its averages and its index: no curve",
+    "a-tenor-not-published": "the ECB publishes no curve, so no tenor goes unpublished",
+    "two-conventions-one-tenor": "the ECB publishes no bill: one convention a record",
+    "a-curve-point-from-another-source": "the ECB publishes no curve point another source does",
 }
 
 NOT_PRESENTED = {
-    case.name: NEVER[case.about] for case in suite("data").cases if case.about in NEVER
+    **{case.name: NEVER[case.about] for case in suite("data").cases if case.about in NEVER},
+    **NO_CURVE,
+    # From contract v27 about trades, which the plugin never records.
+    "queries-the-lake-within-bounds": "it records no trades",
+    # Ruling 518: the SDK records latency and sends no ReportLatency yet.
+    "reports-its-feed-delay": "core receives ReportLatency from contract v28, ruling 515",
 }
+
+
+class Revised(SyntheticPortal):
+    """The ECB's portal, €STR's current range read twice: as recorded, then
+    with 22 October's €STR revised at 08:05 UTC."""
+
+    def __init__(self) -> None:
+        super().__init__(lambda: ESTR_AT)
+        self.reads = 0
+
+    async def get(self, path: str, modified_since: str = "") -> Fetched:
+        self.reads += 1
+        got = await super().get(path)
+        if self.reads == 1:
+            return got
+        body = got.text.replace(",WT,2026-10-22,2.442,", ",WT,2026-10-22,2.452,")
+        later = got.fetched_at + timedelta(minutes=5)
+        return Fetched(path, 200, body.encode(), later, "Fri, 23 Oct 2026 08:05:00 GMT", got.date)
 
 
 class Corrected(SyntheticPortal):
@@ -85,11 +123,13 @@ class Corrected(SyntheticPortal):
 
 
 def _resolving(recorder: Recorder, ambiguous: str = "") -> None:
-    """Each ISO code resolved to `LCL-<code>`; `ambiguous` to two records;
-    TARGET's calendar answered."""
+    """Each ISO code resolved to `LCL-<code>`, each €STR record to its seed's;
+    `ambiguous` to two records; TARGET's calendar answered."""
 
     def answer(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
         code = params.identifiers[0].value
+        if params.identifiers[0].source == "ecb":
+            return ops.ResolveIdentifierResult(found=True, instrument_id=ESTR_IDS[code])
         if code == ambiguous:
             return ops.ResolveIdentifierResult(found=False, miss_reason=ops.MISS_REASON_AMBIGUOUS)
         return ops.ResolveIdentifierResult(found=True, instrument_id=f"LCL-{code}")
@@ -149,6 +189,30 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
         )
         await recorder.receive(want_withdrawn=feed.on_withdrawn)
 
+    def estr(recorder: Recorder, portal: Any = None) -> EstrFeed:
+        fx = Feed(
+            recorder, portal or SyntheticPortal(lambda: ESTR_AT), RawStore(tmp),
+            now=lambda: ESTR_AT,
+        )  # fmt: skip
+        return EstrFeed(fx)
+
+    async def estr_read(recorder: Recorder) -> None:
+        _resolving(recorder)
+        await estr(recorder).check()
+
+    async def estr_revised(recorder: Recorder) -> None:
+        # Read again in full, as the next hourly check after the revision.
+        _resolving(recorder)
+        work = estr(recorder, Revised())
+        await work.check()
+        work._modified = ""
+        await work.check()
+        current = [
+            sorted(r.meta.row_key for r in p.rates if r.meta.business_date >= "2026-10-12")
+            for p in recorder.on("RecordRates")
+        ]
+        assert current[0] == current[-1]
+
     async def a_calendar_read(recorder: Recorder) -> None:
         # The next rates expected, after the current rates are read.
         _resolving(recorder)
@@ -167,7 +231,9 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
         "a-standing-want-withdrawn": withdrawn,
         "reads-its-datasets-licences": licences,
         "reads-a-calendar": a_calendar_read,
-        "queries-the-lake-within-bounds": lake_query("LCL-EUR"),
+        "a-rate-fixing": estr_read,
+        "a-same-day-revision": estr_revised,
+        "an-index-level": estr_read,
     }
 
 
@@ -175,9 +241,10 @@ def test_the_data_suite_passes(tmp_path: Path) -> None:
     report = run("data", producers(tmp_path), not_presented=NOT_PRESENTED, instance_id="ecb")
     assert report.passed, report.failures
     assert sorted(report.not_presented) == sorted(NOT_PRESENTED)
-    # The plugin's own eleven, and the cases every suite holds that the SDK
-    # answers (contract v24's two, v26's event group).
-    assert len(report.passed_cases) == 11 + len(ANSWERED_BY_SDK)
+    # The plugin's own thirteen -- stage 0's ten and the rates slice's three
+    # -- and the cases every suite holds that the SDK answers (contract v24's
+    # two, v26's event group).
+    assert len(report.passed_cases) == 13 + len(ANSWERED_BY_SDK)
     assert report.answered_by_sdk == list(ANSWERED_BY_SDK)
     assert "reads-a-calendar" in report.passed_cases
 

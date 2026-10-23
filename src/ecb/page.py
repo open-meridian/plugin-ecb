@@ -12,14 +12,17 @@ So, as spec/a-public-rates-and-filings-data-plugin §5 has them:
 - **Connection** (`/`): "Key" -- the mode (Live or Sample data), "No key
   needed", what the ECB serves; "Limits and use" -- the ECB states no
   limit, the requests made, the last check and error; "Stream": it does not
-  stream. Then **Sources**, one line per source: its state, the last day
+  stream, and **Sources**, the reference rates and €STR, a row of it
+  (beside the role's "Sessions" from 0.32.0 a section of its own would not
+  fit one screen), each source in its detail: its state, the last day
   published, the next expected by TARGET's calendar, its calls, its last
-  error.
-- **Datasets** (`/datasets`): "Served", "Wants" and "Subjects", then
-  **Lag**, the median and longest published-minus-valid time, and
-  **Records**, each currency the ECB rates and the deployment's instrument
-  for it or why there is none -- one line a row, searched and paged by the
-  kit's om-pager to fit one screen.
+  error, and how far its history is recorded.
+- **Datasets** (`/datasets`): "Served", "Wants" and "Subjects", each with
+  both datasets, then **Lag**, the median and longest published-minus-valid
+  time of each, and **Records**: the seven €STR records and each currency
+  the ECB rates, with the deployment's instrument for each or why there is
+  none -- one line a row, searched and paged by the kit's om-pager to fit
+  one screen.
 
 Neither shows an account's data, since the plugin reaches none, nor a rate:
 prices are the reading roles' to show.
@@ -37,9 +40,10 @@ import meridian
 from meridian.roles import data
 
 from . import records
-from .declared import ECB_FX_DATASET
+from .declared import ECB_ESTR_DATASET, ECB_FX_DATASET
+from .estr_feed import EstrFeed, EstrStatus
 from .feed import Feed, Status
-from .portal import BASE, SERIES
+from .portal import BASE, ESTR_SERIES, SERIES
 from .rates import EUR
 
 TITLE = "European Central Bank"
@@ -53,8 +57,6 @@ DATASETS = "/datasets"
 
 #: The longest search the Datasets tab reads.
 MOST_QUERY = 100
-#: How many wants the Datasets tab lists; read_datasets answers every one held.
-SHOWN_WANTS = 3
 #: The attribution the ECB's terms ask for, which the contract's licence has
 #: no field for until the rates slice (the spec's item 4).
 ATTRIBUTION = (
@@ -62,18 +64,27 @@ ATTRIBUTION = (
     "rates accurately, and say so where they are changed."
 )
 SOURCE_NAME = "ECB euro foreign exchange reference rates"
+ESTR_SOURCE_NAME = "ECB euro short-term rate (€STR)"
+#: What each kind of €STR record is recorded as, for a person.
+RECORDED_AS = {"fixing": "fixings", "average": "averages", "index_level": "index levels"}
 
-_held: dict[str, Feed] = {}
+_held: dict[str, Any] = {}
 
 
-def hold(feed: Feed) -> None:
-    """The feed the pages read, once the plugin has registered."""
+def hold(feed: Feed, estr: EstrFeed | None = None) -> None:
+    """The feeds the pages read, once the plugin has registered."""
     _held["feed"] = feed
+    _held["estr"] = estr
 
 
 def _status() -> tuple[Status, Feed | None]:
     feed = _held.get("feed")
     return (feed.status if feed is not None else Status(), feed)
+
+
+def _estr() -> EstrFeed | None:
+    estr: EstrFeed | None = _held.get("estr")
+    return estr
 
 
 def _iso(moment: datetime | None) -> str:
@@ -92,8 +103,24 @@ def _published(last_modified: str) -> str:
     return moment.replace(tzinfo=UTC).isoformat(timespec="seconds")
 
 
-def _state(status: Status) -> tuple[str, str, str]:
-    """The head's status: its state, what it means, and its detail."""
+def _state(status: Status, estr: EstrStatus | None = None) -> tuple[str, str, str]:
+    """The head's status: its state, what it means, and its detail -- the
+    reference rates' first, then €STR's where they say nothing worse."""
+    state = _fx_state(status)
+    if estr is None or state[0] in ("error", "busy"):
+        return state
+    if estr.error:
+        return "warn", "Answering", f"€STR: {estr.error}"
+    misses = [r for r in estr.records.values() if r.miss]
+    if misses and state[0] == "ok":
+        codes = ", ".join(r.series.code for r in misses)
+        plural = "record" if len(misses) == 1 else "records"
+        return "warn", f"{len(misses)} €STR {plural} not resolved", codes
+    return state
+
+
+def _fx_state(status: Status) -> tuple[str, str, str]:
+    """The reference rates' state, what it means, and its detail."""
     misses = [c for c in status.currencies.values() if c.miss]
     read = status.read_at is not None or status.not_modified
     if status.error and not read:
@@ -120,8 +147,43 @@ def _calendar(status: Status) -> str:
     return f"TARGET closing days, version {days.version}"
 
 
+def _estr_source(estr: EstrFeed, instance: str) -> records.SourceRead:
+    """€STR's line in "Sources"."""
+    held = estr.status
+    if held.error and held.read_at is None:
+        said = "Not answering"
+    elif held.error:
+        said = "Answering"
+    elif held.read_at is None and not held.not_modified:
+        said = "Checking the ECB"
+    else:
+        said = "Sample data" if held.mode == "synthetic" else "Answering"
+    around = "around 08:00 CET"
+    if held.next_rate_day:
+        around += f", the rate of {held.next_rate_day:%a %d %b}"
+    return records.SourceRead(
+        source=ESTR_SOURCE_NAME,
+        dataset=f"{instance}:{ECB_ESTR_DATASET.key}",
+        state=said,
+        last_release=_day(held.latest_day),
+        next_expected=_day(held.next_release),
+        calls=held.fetches,
+        last_error=held.error,
+        reads=(
+            "The answer recorded on 2026-10-23, committed with the plugin"
+            if held.mode == "synthetic"
+            else f"{BASE}{ESTR_SERIES}, every €STR series"
+        ),
+        published_at=_published(held.last_modified),
+        published_around=around,
+        not_modified=held.not_modified,
+        history=held.backfill,
+    )
+
+
 def connection_read(status: Status, feed: Feed | None) -> records.ConnectionRead:
-    state, said, _ = _state(status)
+    estr = _estr()
+    state, said, _ = _state(status, estr.status if estr is not None else None)
     kept = feed.raw.keys() if feed is not None else []
     window = ""
     if feed is not None and feed.raw.granted:
@@ -140,7 +202,7 @@ def connection_read(status: Status, feed: Feed | None) -> records.ConnectionRead
             "The ECB states none; the plugin asks one request at a time, at most one every "
             "two seconds, and checks for new rates every hour"
         ),
-        calls=status.fetches,
+        calls=status.fetches + (estr.status.fetches if estr is not None else 0),
         last_call_at=_iso(status.checked_at),
         last_error=status.error,
         sessions=None,
@@ -161,14 +223,24 @@ def connection_read(status: Status, feed: Feed | None) -> records.ConnectionRead
             records.SourceRead(
                 source=SOURCE_NAME,
                 dataset=f"{instance}:{ECB_FX_DATASET.key}",
-                state=said,
+                state=_fx_state(status)[1],
                 last_release=_day(status.latest_day),
                 next_expected=_day(status.next_release),
                 calls=status.fetches,
                 last_error=status.error,
-            )
+                reads=(
+                    "The answer recorded on 2026-10-19, committed with the plugin"
+                    if status.mode == "synthetic"
+                    else f"{BASE}{SERIES}, every currency against the euro"
+                ),
+                published_at=_published(status.last_modified),
+                published_around="around 16:00 CET",
+                not_modified=status.not_modified,
+                history="Any past day, when the lake wants it",
+            ),
+            *([_estr_source(estr, instance)] if estr is not None else []),
         ],
-        not_modified=status.not_modified,
+        not_modified=status.not_modified + (estr.status.not_modified if estr is not None else 0),
         responses_kept=len(kept),
         kept_for=window,
     )
@@ -179,7 +251,7 @@ def _duration(seconds: int) -> str:
     return f"{hours} h {rest // 60:02d} m"
 
 
-def lag_read(status: Status, dataset: str) -> records.LagRead:
+def lag_read(status: Status | EstrStatus, dataset: str) -> records.LagRead:
     lags = status.lags
     if not lags:
         return records.LagRead(dataset=dataset, said="No rate read with its published time yet")
@@ -197,9 +269,10 @@ def lag_read(status: Status, dataset: str) -> records.LagRead:
 def datasets_read(status: Status, feed: Feed | None) -> records.DatasetsRead:
     instance = feed.plugin.identity.instance_id if feed is not None else "ecb"
     dataset = f"{instance}:{ECB_FX_DATASET.key}"
+    estr = _estr()
     answered = status.read_at is not None or status.mode == "synthetic"
     served = data.served(
-        [ECB_FX_DATASET],
+        [ECB_FX_DATASET, ECB_ESTR_DATASET],
         instance,
         feed.wants if feed is not None else None,
         "Yes: no key needed" if answered else "Not asked yet",
@@ -226,27 +299,55 @@ def datasets_read(status: Status, feed: Feed | None) -> records.DatasetsRead:
             )
             for c in currencies
         ],
-        lag=[lag_read(status, dataset)],
-        unread=[f"{line} ({n} reads)" for line, n in sorted(status.unread.items())],
+        lag=[
+            lag_read(status, dataset),
+            *(
+                [lag_read(estr.status, f"{instance}:{ECB_ESTR_DATASET.key}")]
+                if estr is not None
+                else []
+            ),
+        ],
+        unread=[
+            f"{line} ({n} reads)"
+            for line, n in sorted(
+                [*status.unread.items(), *(estr.status.unread.items() if estr else [])]
+            )
+        ],
+        rates=[
+            records.RateRecordRead(
+                code=r.series.code,
+                name=r.series.name,
+                kind=r.series.kind,
+                series=r.series.key,
+                instrument_id=r.instrument_id,
+                miss=r.miss,
+                latest_day=_day(r.latest_day),
+            )
+            # Listed once €STR has been checked: before, nothing is resolved.
+            for r in (estr.status.records.values() if estr and estr.status.checked_at else [])
+        ],
     )
 
 
-def figures(status: Status, feed: Feed | None) -> list[meridian.Figure]:
+def figures(
+    status: Status, feed: Feed | None, estr: EstrStatus | None = None
+) -> list[meridian.Figure]:
     """The data role's figures, in its order (`meridian.roles.data`); the
     ECB's plugin reports none of its own."""
-    state, said, why = _state(status)
+    state, said, why = _state(status, estr)
+    error = status.error or (f"€STR: {estr.error}" if estr is not None and estr.error else "")
     if status.mode == "synthetic" and state == "ok":
         connection: Any = "Sample data"
     elif said == "Not answering":
         connection = meridian.Figure("", said, state="error", why=why[:200])
     else:
         connection = meridian.Figure(
-            "", "Answering", state="warn" if status.error else None, why=status.error[:200]
+            "", "Answering", state="warn" if error else None, why=error[:200]
         )
     last = feed.wants.counts.last_ns if feed is not None else 0
     return data.figures(
         connection=connection,
-        entitled_at_vendor="1 of 1 datasets",
+        entitled_at_vendor="2 of 2 datasets",
         stream="Does not stream",
         last_recorded=(datetime.fromtimestamp(last / 10**9, UTC) if last else None),
     )
@@ -295,7 +396,9 @@ pages.environment.filters["day"] = _weekday
 async def connection(request: meridian.Request) -> meridian.Response:
     status, feed = _status()
     read = connection_read(status, feed)
-    return pages.answer("connection.html", read, detail=_state(status)[2])
+    estr = _estr()
+    detail = _state(status, estr.status if estr is not None else None)[2]
+    return pages.answer("connection.html", read, detail=detail)
 
 
 @pages.page(
@@ -317,17 +420,19 @@ async def connection(request: meridian.Request) -> meridian.Response:
 async def datasets(request: meridian.Request) -> meridian.Response:
     status, feed = _status()
     read = datasets_read(status, feed)
-    # A browser's search narrows the currencies drawn, and it is drawn the
-    # latest wants; a tool answers them all.
+    estr = _estr()
+    # A browser's search narrows the records drawn; the wants are all drawn,
+    # paged by the kit, as a tool answers them.
     query = request.query.get("q", "").strip()[:MOST_QUERY]
     shown = [r for r in read.records if matching(query, r.code, r.name)]
-    drawn = read if request.tool_name else replace(read, wants=read.wants[:SHOWN_WANTS])
+    shown_rates = [r for r in read.rates if matching(query, r.code, r.name, r.series)]
     return pages.answer(
         "datasets.html",
-        drawn,
+        read,
         query=query,
         shown=shown,
-        state=_state(status),
+        shown_rates=shown_rates,
+        recorded_as=RECORDED_AS,
+        state=_state(status, estr.status if estr is not None else None),
         checked_at=_iso(status.checked_at),
-        wants=len(read.wants),
     )
