@@ -187,8 +187,10 @@ async def test_the_averages_and_the_index(tmp_path: Path) -> None:
     assert index.value.unit == ops.VALUE_UNIT_INDEX
     assert index.value.index_base == "2019-10-01=100"
     assert str(as_decimal(index.value.value)) == "110.05474139"
-    assert index.convention.compounding == ops.COMPOUNDING_COMPOUNDED
-    assert index.convention.periods_per_year == 360
+    # The convention of the rate it compounds, €STR's, as SOFR Index's.
+    assert index.convention.day_count == ops.DAY_COUNT_ACT_360
+    assert index.convention.compounding == ops.COMPOUNDING_SIMPLE
+    assert index.convention.periods_per_year == 0
 
 
 async def test_only_the_latest_day_states_its_published_time(tmp_path: Path) -> None:
@@ -473,7 +475,8 @@ def test_the_dataset_is_declared_as_the_spec_has_it() -> None:
 
 async def test_a_record_held_later_is_asked_again_at_the_next_check(tmp_path: Path) -> None:
     # The deployment comes to hold the record after the first check (its
-    # licence list read late): the next check finds it, reporting nothing new.
+    # licence list read late): a check after the SDK's retry finds it,
+    # reporting nothing new.
     held = {"yet": False}
     plugin = recorder()
 
@@ -489,6 +492,9 @@ async def test_a_record_held_later_is_asked_again_at_the_next_check(tmp_path: Pa
     assert work.status.records["ESTR compounded index"].miss
     assert INDEX not in {r.meta.subjects[0].entity_id for r in rows_of(plugin)}
     held["yet"] = True
+    # The SDK asks a missed record again after five minutes (0.32.3): the
+    # next check after that finds it.
+    work.fx.now = lambda: ESTR_AT + timedelta(minutes=6)
     work._modified = ""
     await work.check()
     assert work.status.records["ESTR compounded index"].instrument_id == INDEX

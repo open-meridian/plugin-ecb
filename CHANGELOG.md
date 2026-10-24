@@ -2,15 +2,15 @@
 
 ## 0.2.0
 
-Stage 1 of the ECB's data plugin, on open-meridian 0.32.2 (contract v27).
+Stage 1 of the ECB's data plugin, on open-meridian 0.32.3 (contract v27).
 
 - **The euro short-term rate as rates**, a second dataset (`ecb_estr`), read
   from the ECB's Data Portal (the `EST` dataflow) and recorded through the
   SDK's rates helpers: €STR as a fixing with its volume, transactions and
   25th and 75th percentiles, its 1-week, 1-month, 3-month, 6-month and
   12-month compounded averages as averages (per cent, actual/360, simple),
-  and its compounded index as an index level (1 October 2019 = 100,
-  compounded daily on actual/360). Each is
+  and its compounded index as an index level (1 October 2019 = 100, its
+  convention €STR's: actual/360, simple). Each is
   about the platform's seeded `ecb:` record, resolved by its symbol at the
   ECB, never minted.
 - **Pushed when published**, at 08:00 CET the next TARGET business day,
@@ -24,7 +24,7 @@ Stage 1 of the ECB's data plugin, on open-meridian 0.32.2 (contract v27).
   `a-same-day-revision`, `an-index-level`); the curve cases, the stream's
   liveness and the lake query (about trades from v27) not presented, with
   why; the feed delay not presented until contract v28 (ruling 518).
-- **The pins:** open-meridian 0.32.2 and its base image, core a5da59a's
+- **The pins:** open-meridian 0.32.3 and its base image, core a5da59a's
   runtime and harness for the e2e, meridian 0.1.51 for the check. `ecb_fx`
   is unchanged.
 

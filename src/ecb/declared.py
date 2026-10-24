@@ -27,8 +27,8 @@ it, and any past day pulled when the lake wants it:
   no limit on retention, and not one person's terms (`personal_use` false).
   The ECB asks to be cited as the source, and a change to its figures to be
   said: docs/terms.md and the Datasets page say so. The licence's own
-  attribution fields (SDK 0.32.2) wait for a core that accepts them at
-  registration. A deployment's licence confirms or replaces the
+  attribution fields (SDK 0.32.2) wait for core 0.1.311 or later, which
+  accepts them at registration. A deployment's licence confirms or replaces the
   default on the Data sources page; the plugin says nothing of whether a
   deployment meets anyone's terms.
 
@@ -74,8 +74,8 @@ HISTORY = 10_100
 #: Each dataset's default licence, from the ECB's terms (FDP §7): kept, with
 #: derived use and display, no limit on retention, not one person's. The
 #: attribution the ECB asks for is said on the Datasets page and in
-#: docs/terms.md: SDK 0.32.2's attribution fields wait for a core that
-#: accepts them at registration (the licence hold of 2026-10-24).
+#: docs/terms.md: SDK 0.32.2's attribution fields wait for core 0.1.311 or
+#: later, which accepts them at registration (the licence hold, 2026-10-24).
 ECB_LICENCE = DatasetLicence(
     kept=True, derived_use=True, derived_use_terms="not_restricted", display=True
 )

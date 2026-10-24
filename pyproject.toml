@@ -13,7 +13,7 @@ requires-python = ">=3.11"
 # pick up another. The Dockerfile's base is the same version. The ECB's
 # portal is read with the standard library: no third-party dependency.
 dependencies = [
-  "open-meridian==0.32.2",
+  "open-meridian==0.32.3",
 ]
 
 [project.urls]
