@@ -37,7 +37,8 @@ rate records:
   transactions and its 25th and 75th percentiles, actual/360, simple;
 - each **compounded average** as an *average*, in per cent, actual/360,
   simple, as the ECB annualises it;
-- the **compounded index** as an *index level*, based 1 October 2019 = 100.
+- the **compounded index** as an *index level*, based 1 October 2019 = 100,
+  €STR compounded each day on actual/360.
 
 A rate's day is the day it is for: €STR of Thursday is computed from
 Thursday's borrowing and published on Friday. A value the ECB marks

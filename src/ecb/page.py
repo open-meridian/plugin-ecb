@@ -12,11 +12,10 @@ So, as spec/a-public-rates-and-filings-data-plugin §5 has them:
 - **Connection** (`/`): "Key" -- the mode (Live or Sample data), "No key
   needed", what the ECB serves; "Limits and use" -- the ECB states no
   limit, the requests made, the last check and error; "Stream": it does not
-  stream, and **Sources**, the reference rates and €STR, a row of it
-  (beside the role's "Sessions" from 0.32.0 a section of its own would not
-  fit one screen), each source in its detail: its state, the last day
-  published, the next expected by TARGET's calendar, its calls, its last
-  error, and how far its history is recorded.
+  stream. Then **Sources**, one line per source -- the reference rates and
+  €STR: its state, the last day published, the next expected by TARGET's
+  calendar, its calls, its last error, and in its detail how far its
+  history is recorded.
 - **Datasets** (`/datasets`): "Served", "Wants" and "Subjects", each with
   both datasets, then **Lag**, the median and longest published-minus-valid
   time of each, and **Records**: the seven €STR records and each currency
@@ -57,8 +56,8 @@ DATASETS = "/datasets"
 
 #: The longest search the Datasets tab reads.
 MOST_QUERY = 100
-#: The attribution the ECB's terms ask for, which the contract's licence has
-#: no field for until the rates slice (the spec's item 4).
+#: The attribution the ECB's terms ask for, said on the Datasets page; the
+#: licence's attribution fields wait for a core that accepts them.
 ATTRIBUTION = (
     "Source: European Central Bank. Cite the ECB as the source, reproduce the "
     "rates accurately, and say so where they are changed."

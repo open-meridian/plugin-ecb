@@ -75,7 +75,7 @@ def recorder(ambiguous: str = "", missing: str = "") -> Recorder:
     """The suite's recorder answering each ISO code with `LCL-<code>`
     (`ambiguous` with two records, `missing` with none), each €STR record by
     its seed's symbol at the ECB with `ESTR_IDS`'s (`missing` with none),
-    TARGET's calendar, and each batch of rates as recorded."""
+    and TARGET's calendar; the SDK's recorder counts each batch of rates."""
     plugin = Recorder(INSTANCE)
 
     def resolved(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
@@ -94,7 +94,6 @@ def recorder(ambiguous: str = "", missing: str = "") -> Recorder:
 
     plugin.answer("ResolveIdentifier", resolved)
     plugin.answer("ReadCalendar", target_2026)
-    plugin.answer("RecordRates", lambda p: ops.RecordRatesResult(recorded=len(p.rates)))
     return plugin
 
 

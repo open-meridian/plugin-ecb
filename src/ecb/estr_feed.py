@@ -18,7 +18,7 @@ ruling 345); only the ECB's part is here.
   simple: the ECB annualises each average's compounded growth over its
   period on actual/360, as a simple rate (its compounded rates methodology);
 - the compounded index an **index level**, its base 1 October 2019 = 100,
-  with no convention;
+  its convention €STR compounded daily on actual/360 (periods 360);
 - `preliminary` where the ECB marks the value provisional;
 - its business date the day the rate is for, Frankfurt's day; its row key
   the SDK's, from the ECB's series key, the kind, the convention, the day
@@ -49,7 +49,8 @@ tried again on the next check.
 **Subjects.** Each record is resolved by the identifiers the platform's seed
 gives it (estr.py), as of now, once per process, by the SDK's `rates.Feed`;
 one the deployment does not hold is reported missing once a day, never
-minted, and its rows wait until it resolves.
+minted, asked again quietly at each check, and its rows wait until it
+resolves.
 
 **Wants.** A want of `ecb_estr`'s rates for one of the seven records, a
 business date, a range of at most a quarter, or the latest: the days are read
@@ -70,6 +71,7 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from meridian import Money
+from meridian.operations import RateConvention
 from meridian.plugin.v1 import operations_pb2 as ops
 from meridian.roles.data import rates
 
@@ -97,6 +99,11 @@ from .rates import last_modified_ns
 log = logging.getLogger("ecb")
 
 RATE = "meridian.v1.Rate"
+#: The compounded index's convention: €STR compounded each day on
+#: actual/360, as the lake records an index level (it requires one).
+INDEX_CONVENTION = RateConvention(
+    day_count="act_360", compounding="compounded", periods_per_year=360
+)
 #: The most days after a rate's day its published time may fall: a long
 #: weekend, Good Friday to Easter Monday, and the next morning.
 PUBLISHED_WITHIN = 5
@@ -223,13 +230,37 @@ class EstrFeed:
             record.miss = "" if found else "not held: reported missing"
         return {code: r.instrument_id for code, r in self.status.records.items()}
 
+    async def ask_again(self) -> None:
+        """Each record not held asked again, quietly, at each check: the SDK
+        reports a miss once a day and answers it from memory till then, but
+        a deployment may come to hold the record sooner -- its platform
+        reached, the licence list naming the ECB read (ruling 545). Found,
+        it is the SDK's subject from then on; not found, nothing is reported
+        twice in a day."""
+        for record in self.status.records.values():
+            if record.instrument_id or not record.miss:
+                continue
+            series = record.series
+            named = tuple((s, v, o) for s, v, o in series.identifiers())
+            found = await self.plugin.resolve_identifier(
+                identifiers=[ops.Identifier(scheme=s, value=v, source=o) for s, v, o in named],
+                as_of_ns=_ns(self.now()),
+                stated_asset_class="referential",
+                stated_description=series.name,
+                stated_instrument_type=series.instrument_type,
+            )
+            if found.found and found.instrument_id:
+                self.rates.subjects[named] = str(found.instrument_id)
+                self.rates.missed.pop(named, None)
+                record.instrument_id, record.miss = str(found.instrument_id), ""
+
     # ── Recording ───────────────────────────────────────────────────────
 
     def _row(self, fixing: Fixing, subject: str, raw_key: str, published_ns: int) -> Any:
         series = fixing.series
         if series.kind == "index_level":
             value = rates.index_level(fixing.value.text, INDEX_BASE)
-            convention = None
+            convention = INDEX_CONVENTION
         else:
             value = rates.percent(fixing.value.text)
             convention = rates.MONEY_MARKET
@@ -325,6 +356,7 @@ class EstrFeed:
         where nothing was recorded from the current range."""
         self._follow_mode()
         self.status.checked_at = self.now()
+        await self.ask_again()
         start, end = self.fx.portal.current(self.today(), ESTR_SERIES)
         try:
             read = await self.read(start, end, self._modified if self._recorded_digest else "")

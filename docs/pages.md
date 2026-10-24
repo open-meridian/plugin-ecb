@@ -16,12 +16,12 @@ How the plugin reaches the ECB, and how the last check went:
 - **Limits and use:** the limits it keeps (the ECB states none; one request
   at a time, at most one every two seconds, a check every hour), the
   requests made, the last check and error, and how many answers are kept;
-- **Stream:** it does not stream; then **Sources**, the reference rates and
-  €STR, each with the last day it published. The row's `…` opens each
-  source: its state, where it reads, when its values last changed, the next
-  day expected by TARGET's calendar, how far its history is recorded, the
-  calls made and the last error; and how the calendar was read;
-- **Sessions:** none, as it does not stream.
+- **Stream:** it does not stream;
+- **Sources:** one line per source -- the reference rates and €STR: its
+  state, the last day it published, the next day expected by TARGET's
+  calendar, and the calls made. A row's `…` opens where it reads, when its
+  values last changed, how the calendar was read, how far its history is
+  recorded and the last error.
 
 ## Datasets (`read_datasets`)
 

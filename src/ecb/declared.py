@@ -26,9 +26,9 @@ it, and any past day pulled when the lake wants it:
 - the licence the ECB's terms suggest: kept, derived use and display, with
   no limit on retention, and not one person's terms (`personal_use` false).
   The ECB asks to be cited as the source, and a change to its figures to be
-  said: the contract's licence has no attribution field until the rates
-  slice (the spec's item 4), so the attribution is stated in docs/terms.md
-  and on the Datasets page. A deployment's licence confirms or replaces the
+  said: docs/terms.md and the Datasets page say so. The licence's own
+  attribution fields (SDK 0.32.2) wait for a core that accepts them at
+  registration. A deployment's licence confirms or replaces the
   default on the Data sources page; the plugin says nothing of whether a
   deployment meets anyone's terms.
 
@@ -48,10 +48,8 @@ backfilled once, and any past day pulled when the lake wants it:
 - its day Frankfurt's, ending at midnight, and its calendar TARGET's: the
   ECB computes €STR for each TARGET business day and publishes it at 08:00
   CET the next one;
-- the licence its terms suggest, as `ecb_fx`'s: kept, derived use and
-  display, citing the ECB. The contract's declared licence has no
-  attribution field the SDK writes yet, so the attribution is stated in
-  docs/terms.md and on the Datasets page, as for `ecb_fx`.
+- the licence its terms suggest, `ecb_fx`'s: kept, derived use and
+  display, citing the ECB on the Datasets page and in docs/terms.md.
 
 **Storage:** the portal's answers (raw.py), archivable, ten years by default.
 """
@@ -73,6 +71,14 @@ VENDOR = "European Central Bank"
 CADENCE = 86_400
 #: The series since 4 January 1999, in days, as the spec's catalogue states it.
 HISTORY = 10_100
+#: Each dataset's default licence, from the ECB's terms (FDP §7): kept, with
+#: derived use and display, no limit on retention, not one person's. The
+#: attribution the ECB asks for is said on the Datasets page and in
+#: docs/terms.md: SDK 0.32.2's attribution fields wait for a core that
+#: accepts them at registration (the licence hold of 2026-10-24).
+ECB_LICENCE = DatasetLicence(
+    kept=True, derived_use=True, derived_use_terms="not_restricted", display=True
+)
 #: The platform's "Euro (TARGET)" currency calendar, read from the platform
 #: on 2026-10-19: TARGET's closing days, which the ECB's Governing Council
 #: set, on which it publishes no reference rate.
@@ -85,7 +91,7 @@ ECB_FX_DATASET = DatasetDeclaration(
     modes=["push", "pull"],
     cadence=CADENCE,
     history=HISTORY,
-    licence_default=DatasetLicence(kept=True, derived_use=True, display=True),
+    licence_default=ECB_LICENCE,
     day_time_zone=DAY_TIME_ZONE,
     day_end_minute=DAY_END_MINUTE,
     calendar_id=TARGET_CALENDAR,
@@ -111,9 +117,7 @@ ECB_ESTR_DATASET = DatasetDeclaration(
     modes=["push", "pull"],
     cadence=CADENCE,
     history=ESTR_HISTORY,
-    licence_default=DatasetLicence(
-        kept=True, derived_use=True, derived_use_terms="not_restricted", display=True
-    ),
+    licence_default=ECB_LICENCE,
     day_time_zone=DAY_TIME_ZONE,
     day_end_minute=DAY_END_MINUTE,
     calendar_id=TARGET_CALENDAR,

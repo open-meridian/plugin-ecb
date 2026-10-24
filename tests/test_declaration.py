@@ -34,6 +34,12 @@ def test_the_ecbs_terms_are_not_one_persons() -> None:
     assert licence is not None
     assert licence.kept and licence.derived_use and licence.display
     assert not licence.personal_use and licence.retention_days == 0
+    # The attribution fields wait for a core that accepts them (the licence
+    # hold): a registration naming them would be refused.
+    for dataset in (ECB_FX_DATASET, ECB_ESTR_DATASET):
+        declared = dataset.licence_default
+        assert declared is not None and not declared.attribution_required
+        assert not declared.attribution_text and not declared.redistribution
 
 
 def test_the_answers_are_kept_in_storage() -> None:

@@ -2,7 +2,7 @@
 
 The European Central Bank's euro foreign exchange reference rates and euro
 short-term rate as an Open Meridian data plugin, in Python on the
-open-meridian SDK (0.32.1, contract v27). It runs beside a sidecar in a
+open-meridian SDK (0.32.2, contract v27). It runs beside a sidecar in a
 Meridian deployment and puts each TARGET business day's reference rates into
 the deployment's lake, each rate the price of the euro's cash instrument in
 the other currency, as the ECB quotes it (`ecb_fx`), and each day's €STR,

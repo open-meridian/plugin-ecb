@@ -31,13 +31,15 @@ standard library only.
 8. A new container: it reads the rates again and records nothing twice;
    the lake is unchanged.
 
-€STR (`ecb_estr`, 0.2.0) is proven up to recording: core's harness at
-c786b9a does not hold the platform's seeded `ecb:` referential records yet,
-so sample data's €STR is read (its latest day 22 October 2026), each of its
-seven records asked of the deployment and reported missing -- `miss|ecb|7`
-in the lake, never minted -- and no row recorded; core lists `ecb:ecb_estr`
-as declared, and `read_datasets` names the seven not held. Recording them
-is proven by the unit tests and the data suite until the harness seeds them.
+€STR (`ecb_estr`, 0.2.0), beside them: sample data's €STR read to 22
+October 2026; each of its seven records resolved by its symbol at the ECB to
+the platform's seeded `INS-` record, never minted (core's harness from
+a5da59a holds them); the current range recorded, then the history before it
+backfilled once; core listing `ecb:ecb_estr` as declared; licensed and entitled; and read back by the reader: €STR of 22
+October a fixing of 2.442 per cent, act/360 simple, with its volume, count,
+percentiles and published time, the index an index level based 1 October
+2019 = 100, and a backfilled day with no published time. In the lake each
+€STR subject is named by its seed's code.
 """
 
 import json
@@ -52,6 +54,9 @@ COMPONENTS = ".e2e/components.log"
 COMPOSE = ["docker", "compose", "-p", PROJECT, "-f", ".e2e/harness/compose.yaml",
            "-f", ".e2e/harness/plugins.yaml", "-f", "e2e/plugin.yaml"]
 DATASET = "ecb:ecb_fx"
+#: Seconds after the deployment starts by which its conductor has read the
+#: platform's licence list: core's FIRST_AGAIN_AFTER (60 s) and a margin.
+LICENCE_LIST_READ = 80
 ESTR = "ecb:ecb_estr"
 
 
@@ -142,6 +147,7 @@ def run():
     started = time.time()
     compose("--profile", "runner", "down", "-v", "--remove-orphans", check=False)
     compose("up", "-d")
+    up_at = time.monotonic()
     runner("ready")
     runner("ready", "--instance", "reader")
 
@@ -154,6 +160,13 @@ def run():
     must("row|" not in lake, f"step 1, nothing recorded with the portal unreachable: {lake}")
 
     # 2. Sample data: the last ten days of the committed answer recorded.
+    # €STR's records are asked of the platform by the ECB's own code, which
+    # the deployment sends only once it has read the platform's licence list
+    # naming the ECB (ruling 545): the conductor reads it on start, and a
+    # minute later where the stand-in platform was not up yet. Sample data
+    # waits for that, so the first read resolves the seven records; the
+    # plugin would otherwise find them at its next hourly check.
+    time.sleep(max(0.0, LICENCE_LIST_READ - (time.monotonic() - up_at)))
     runner("settings", "sample_data=true")
     runner("page", "--level", "admin", "/datasets", "--until", 'data-code="ZAR"', "--seconds", "120")
     runner("page", "--level", "admin", "/", "--until", "Mon 19 Oct", "--seconds", "60")
@@ -187,29 +200,33 @@ def run():
          and not entry.get("day_end_minute") and entry.get("cadence") == 86400
          and entry.get("calendar_id") == "CAL-01M4VF0F5ZRTY7AZ3B36ZVWN11",
          f"step 3, core lists the catalogue as declared: {listed.get(DATASET)}")
-    # €STR, up to recording: read, its seven records asked and not held.
+    # €STR: read, its seven records resolved, the history backfilled once.
     estr_entry = listed.get(ESTR, {}).get("catalogue_entry", {})
     must(estr_entry.get("modes") == ["push", "pull"] and estr_entry.get("history") == 2600
          and "meridian.v1.Rate" in estr_entry.get("data_types", [])
          and estr_entry.get("calendar_id") == "CAL-01M4VF0F5ZRTY7AZ3B36ZVWN11",
          f"step 3, core lists ecb_estr as declared: {listed.get(ESTR)}")
-    estr_source = next((s for s in connection["sources"] if s["dataset"] == ESTR), {})
-    estr_read = until(60, lambda: (lambda s: s if s.get("last_release") == "2026-10-22" else None)(
+    estr_read = until(120, lambda: (lambda s: s if s.get("last_release") == "2026-10-22"
+                                    and s.get("history") == "Done through 2026-10-11" else None)(
         next((s for s in call(read_connection)["sources"] if s["dataset"] == ESTR), {})),
-        f"step 3, €STR's sample read to 22 October: {estr_source}")
+        "step 3, €STR read to 22 October and its history backfilled")
     rates = call(read_datasets)["rates"]
-    must(len(rates) == 7 and all(not r["instrument_id"] and r["miss"] for r in rates)
+    must(len(rates) == 7 and all(r["instrument_id"].startswith("INS-") and not r["miss"] for r in rates)
          and rates[0]["code"] == "ESTR" and rates[0]["series"] == "EST.B.EU000A2X2A25.WT",
-         f"step 3, the seven €STR records asked and not held: {rates}")
-    must("Waiting: 7 of 7 records not held" in estr_read["history"],
-         f"step 3, the history waits for the records: {estr_read}")
-    must(f"row|{ESTR}|" not in store_lake() and "miss|ecb|7" in store_lake(),
-         "step 3, no €STR row recorded, its seven records reported missing")
+         f"step 3, the seven €STR records resolved: {rates}")
+    for r in rates:
+        codes[r["instrument_id"]] = r["code"]
+    estr_ids = {r["code"]: r["instrument_id"] for r in rates}
+    until(60, lambda: store_lake().count(f"row|{ESTR}|rate|") >= 413,
+          f"step 3, €STR's current range and history recorded: {estr_read}")
 
     # 4. Licensed and entitled.
     runner("licence", DATASET, "kept=true", "retention_days=0", "derived_use=true", "display=true",
            "personal_use=false", "note=The ECB's reference rates: free use, citing the ECB.")
     runner("entitle", "--instance", "reader", DATASET, "note=The e2e's reader reads the rates.")
+    runner("licence", ESTR, "kept=true", "retention_days=0", "derived_use=true", "display=true",
+           "personal_use=false", "note=€STR: free use, citing the ECB.")
+    runner("entitle", "--instance", "reader", ESTR, "note=The e2e's reader reads €STR.")
     runner("grant", "--instance", "reader", "--level", "read")
 
     # 5. Read back, in the right instruments.
@@ -224,6 +241,26 @@ def run():
     earlier = prices(ids["EUR"], "2026-10-16")["prices"]
     must(len(earlier) == 29 and not any(p["published"] for p in earlier),
          f"step 5, a rate read after its day states no published time: {earlier[:2]}")
+
+    # €STR read back: the fixing with its volume, count, percentiles and
+    # published time; the index; a backfilled day stating no published time.
+    def rates_of(code, day):
+        body = page("reader", "read", f"/rates?subject={estr_ids[code]}&date={day}&dataset={ESTR}")
+        return json.loads(body)["rates"]
+    fixing = until(60, lambda: rates_of("ESTR", "2026-10-22"), "step 5, €STR of 22 October not read")
+    must(len(fixing) == 1 and fixing[0]["kind"] == "RATE_KIND_FIXING" and fixing[0]["value"] == "2.442"
+         and fixing[0]["unit"] == "VALUE_UNIT_PERCENT" and fixing[0]["day_count"] == "DAY_COUNT_ACT_360"
+         and fixing[0]["compounding"] == "COMPOUNDING_SIMPLE" and fixing[0]["volume"] == "61438000000"
+         and fixing[0]["transaction_count"] == 847 and fixing[0]["percentiles"] == {"25": "2.41", "75": "2.45"}
+         and fixing[0]["published"] == [1792740016 * 10**9] and fixing[0]["version"] == 1,
+         f"step 5, €STR of 22 October as the ECB published it: {fixing}")
+    index = rates_of("ESTR compounded index", "2026-10-22")
+    must(len(index) == 1 and index[0]["kind"] == "RATE_KIND_INDEX_LEVEL" and index[0]["value"] == "110.05474139"
+         and index[0]["unit"] == "VALUE_UNIT_INDEX" and index[0]["index_base"] == "2019-10-01=100",
+         f"step 5, the compounded index of 22 October: {index}")
+    month = rates_of("ESTR 1-month compounded average", "2026-09-25")
+    must(len(month) == 1 and month[0]["kind"] == "RATE_KIND_AVERAGE" and not month[0]["published"],
+         f"step 5, a backfilled average states no published time: {month}")
 
     # 6. Wants: a past day recorded against one; a day the portal states
     # nothing for and a subject not covered declined.
@@ -256,12 +293,8 @@ def run():
     until(120, lambda: "Mon 19 Oct" in page("ecb", "admin", "/"),
           "step 8, the new container did not read the rates again")
     time.sleep(5)
-    # The new container asks for €STR's records again, and counts its misses
-    # again: compared without them.
-    def rows_only(lines):
-        return "".join(line + "\n" for line in lines.splitlines() if not line.startswith("miss|"))
     again = named(store_lake(), codes)
-    must(rows_only(again) == rows_only(got), "step 8, the new container recorded something twice:\n"
+    must(again == got, "step 8, the new container recorded something twice:\n"
          + subprocess.run(["diff", "-u", "-", ".e2e/lake"], input=again, capture_output=True, text=True).stdout[-2000:])
     logs = compose("logs", "--no-color", "ecb").stdout
     must("0 recorded, 0 restated, 203 unchanged" in logs,
@@ -276,9 +309,10 @@ def run():
           f"core listing {DATASET} as declared; licensed and entitled; the euro priced in 29 currencies "
           f"(dollars 1.1225), each a close on its business date, the portal's published time on the day "
           f"read on its day; 25 September wanted and recorded, 31 July declined source silent and the "
-          f"dollar's own instrument not covered; €STR read to 22 October, its seven records asked "
-          f"and reported missing (the harness holds no ecb: record yet), none recorded; `store "
-          f"lake` as e2e/expected.lake ({rows} rows); and a new container recording nothing twice, "
+          f"dollar's own instrument not covered; €STR's seven records resolved to the platform's "
+          f"seeded records, its current range and history recorded once, and read back (2.442 "
+          f"per cent, act/360, with volume, count, percentiles and published time; the index "
+          f"based 2019-10-01=100); `store lake` as e2e/expected.lake ({rows} rows); and a new container recording nothing twice, "
           f"its licence read on start")
 
 

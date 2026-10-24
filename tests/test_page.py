@@ -52,12 +52,12 @@ def test_each_page_is_managed_alone(client: PageClient) -> None:
 
 def test_connection_says_how_the_ecb_is_reached(client: PageClient) -> None:
     text = client.get(CONNECTION, "admin").text
-    # The data role's sections, in its order, the ECB's Sources a row of
-    # Stream, each source in its detail.
+    # The data role's sections, in its order, then the ECB's Sources, a line
+    # a source; no Sessions, as it measures none (SDK 0.32.2).
     assert text.index("<h2>Key</h2>") < text.index("<h2>Limits and use</h2>")
-    assert text.index("<h2>Stream</h2>") < text.index('data-sources="2"')
-    assert text.index('data-sources="2"') < text.index("<h2>Sessions</h2>")
-    assert "Reference rates last Mon 19 Oct; €STR last Thu 22 Oct" in text
+    assert text.index("<h2>Stream</h2>") < text.index("<h2>Sources</h2>")
+    assert "<h2>Sessions</h2>" not in text
+    assert text.count("<tr data-source=") == 2
     assert 'state="ok"' in text and "Sample data" in text
     assert "No key needed" in text and "Does not stream" in text
     assert "Mon 19 Oct" in text  # the latest day published

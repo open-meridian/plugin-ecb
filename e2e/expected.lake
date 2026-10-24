@@ -1,4 +1,416 @@
-miss|ecb|7
+row|ecb:ecb_estr|rate|100|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-10|93|false
+row|ecb:ecb_estr|rate|101|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-10|94|false
+row|ecb:ecb_estr|rate|102|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-10|95|false
+row|ecb:ecb_estr|rate|103|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-10|96|false
+row|ecb:ecb_estr|rate|104|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-10|97|false
+row|ecb:ecb_estr|rate|105|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-10|98|false
+row|ecb:ecb_estr|rate|106|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-11@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-11|99|false
+row|ecb:ecb_estr|rate|107|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-11@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-11|100|false
+row|ecb:ecb_estr|rate|108|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-11@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-11|101|false
+row|ecb:ecb_estr|rate|109|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-11@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-11|102|false
+row|ecb:ecb_estr|rate|10|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-13@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-13|3|false
+row|ecb:ecb_estr|rate|110|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-11@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-11|103|false
+row|ecb:ecb_estr|rate|111|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-11@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-11|104|false
+row|ecb:ecb_estr|rate|112|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-11@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-11|105|false
+row|ecb:ecb_estr|rate|113|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-12@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-12|106|false
+row|ecb:ecb_estr|rate|114|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-12@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-12|107|false
+row|ecb:ecb_estr|rate|115|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-12@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-12|108|false
+row|ecb:ecb_estr|rate|116|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-12@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-12|109|false
+row|ecb:ecb_estr|rate|117|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-12@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-12|110|false
+row|ecb:ecb_estr|rate|118|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-12@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-12|111|false
+row|ecb:ecb_estr|rate|119|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-12@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-12|112|false
+row|ecb:ecb_estr|rate|11|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-13@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-13|4|false
+row|ecb:ecb_estr|rate|120|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-13@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-13|113|false
+row|ecb:ecb_estr|rate|121|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-13@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-13|114|false
+row|ecb:ecb_estr|rate|122|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-13@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-13|115|false
+row|ecb:ecb_estr|rate|123|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-13@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-13|116|false
+row|ecb:ecb_estr|rate|124|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-13@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-13|117|false
+row|ecb:ecb_estr|rate|125|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-13@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-13|118|false
+row|ecb:ecb_estr|rate|126|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-13@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-13|119|false
+row|ecb:ecb_estr|rate|127|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-14@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-14|120|false
+row|ecb:ecb_estr|rate|128|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-14@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-14|121|false
+row|ecb:ecb_estr|rate|129|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-14@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-14|122|false
+row|ecb:ecb_estr|rate|12|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-13@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-13|5|false
+row|ecb:ecb_estr|rate|130|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-14@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-14|123|false
+row|ecb:ecb_estr|rate|131|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-14@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-14|124|false
+row|ecb:ecb_estr|rate|132|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-14@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-14|125|false
+row|ecb:ecb_estr|rate|133|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-14@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-14|126|false
+row|ecb:ecb_estr|rate|134|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-17@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-17|127|false
+row|ecb:ecb_estr|rate|135|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-17@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-17|128|false
+row|ecb:ecb_estr|rate|136|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-17@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-17|129|false
+row|ecb:ecb_estr|rate|137|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-17@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-17|130|false
+row|ecb:ecb_estr|rate|138|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-17@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-17|131|false
+row|ecb:ecb_estr|rate|139|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-17@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-17|132|false
+row|ecb:ecb_estr|rate|13|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-13@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-13|6|false
+row|ecb:ecb_estr|rate|140|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-17@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-17|133|false
+row|ecb:ecb_estr|rate|141|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-18@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-18|134|false
+row|ecb:ecb_estr|rate|142|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-18@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-18|135|false
+row|ecb:ecb_estr|rate|143|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-18@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-18|136|false
+row|ecb:ecb_estr|rate|144|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-18@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-18|137|false
+row|ecb:ecb_estr|rate|145|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-18@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-18|138|false
+row|ecb:ecb_estr|rate|146|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-18@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-18|139|false
+row|ecb:ecb_estr|rate|147|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-18@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-18|140|false
+row|ecb:ecb_estr|rate|148|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-19@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-19|141|false
+row|ecb:ecb_estr|rate|149|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-19@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-19|142|false
+row|ecb:ecb_estr|rate|14|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-13@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-13|7|false
+row|ecb:ecb_estr|rate|150|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-19@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-19|143|false
+row|ecb:ecb_estr|rate|151|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-19@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-19|144|false
+row|ecb:ecb_estr|rate|152|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-19@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-19|145|false
+row|ecb:ecb_estr|rate|153|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-19@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-19|146|false
+row|ecb:ecb_estr|rate|154|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-19@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-19|147|false
+row|ecb:ecb_estr|rate|155|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-20@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-20|148|false
+row|ecb:ecb_estr|rate|156|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-20@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-20|149|false
+row|ecb:ecb_estr|rate|157|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-20@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-20|150|false
+row|ecb:ecb_estr|rate|158|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-20@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-20|151|false
+row|ecb:ecb_estr|rate|159|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-20@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-20|152|false
+row|ecb:ecb_estr|rate|15|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-14@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-14|8|false
+row|ecb:ecb_estr|rate|160|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-20@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-20|153|false
+row|ecb:ecb_estr|rate|161|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-20@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-20|154|false
+row|ecb:ecb_estr|rate|162|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-21@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-21|155|false
+row|ecb:ecb_estr|rate|163|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-21@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-21|156|false
+row|ecb:ecb_estr|rate|164|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-21@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-21|157|false
+row|ecb:ecb_estr|rate|165|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-21@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-21|158|false
+row|ecb:ecb_estr|rate|166|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-21@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-21|159|false
+row|ecb:ecb_estr|rate|167|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-21@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-21|160|false
+row|ecb:ecb_estr|rate|168|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-21@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-21|161|false
+row|ecb:ecb_estr|rate|169|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-24@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-24|162|false
+row|ecb:ecb_estr|rate|16|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-14@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-14|9|false
+row|ecb:ecb_estr|rate|170|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-24@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-24|163|false
+row|ecb:ecb_estr|rate|171|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-24@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-24|164|false
+row|ecb:ecb_estr|rate|172|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-24@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-24|165|false
+row|ecb:ecb_estr|rate|173|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-24@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-24|166|false
+row|ecb:ecb_estr|rate|174|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-24@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-24|167|false
+row|ecb:ecb_estr|rate|175|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-24@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-24|168|false
+row|ecb:ecb_estr|rate|176|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-25@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-25|169|false
+row|ecb:ecb_estr|rate|177|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-25@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-25|170|false
+row|ecb:ecb_estr|rate|178|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-25@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-25|171|false
+row|ecb:ecb_estr|rate|179|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-25@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-25|172|false
+row|ecb:ecb_estr|rate|17|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-14@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-14|10|false
+row|ecb:ecb_estr|rate|180|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-25@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-25|173|false
+row|ecb:ecb_estr|rate|181|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-25@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-25|174|false
+row|ecb:ecb_estr|rate|182|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-25@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-25|175|false
+row|ecb:ecb_estr|rate|183|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-26@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-26|176|false
+row|ecb:ecb_estr|rate|184|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-26@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-26|177|false
+row|ecb:ecb_estr|rate|185|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-26@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-26|178|false
+row|ecb:ecb_estr|rate|186|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-26@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-26|179|false
+row|ecb:ecb_estr|rate|187|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-26@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-26|180|false
+row|ecb:ecb_estr|rate|188|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-26@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-26|181|false
+row|ecb:ecb_estr|rate|189|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-26@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-26|182|false
+row|ecb:ecb_estr|rate|18|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-14@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-14|11|false
+row|ecb:ecb_estr|rate|190|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-27@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-27|183|false
+row|ecb:ecb_estr|rate|191|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-27@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-27|184|false
+row|ecb:ecb_estr|rate|192|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-27@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-27|185|false
+row|ecb:ecb_estr|rate|193|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-27@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-27|186|false
+row|ecb:ecb_estr|rate|194|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-27@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-27|187|false
+row|ecb:ecb_estr|rate|195|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-27@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-27|188|false
+row|ecb:ecb_estr|rate|196|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-27@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-27|189|false
+row|ecb:ecb_estr|rate|197|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-28@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-28|190|false
+row|ecb:ecb_estr|rate|198|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-28@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-28|191|false
+row|ecb:ecb_estr|rate|199|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-28@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-28|192|false
+row|ecb:ecb_estr|rate|19|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-14@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-14|12|false
+row|ecb:ecb_estr|rate|1|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-12@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-12|0|false
+row|ecb:ecb_estr|rate|200|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-28@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-28|193|false
+row|ecb:ecb_estr|rate|201|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-28@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-28|194|false
+row|ecb:ecb_estr|rate|202|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-28@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-28|195|false
+row|ecb:ecb_estr|rate|203|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-28@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-28|196|false
+row|ecb:ecb_estr|rate|204|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-31@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-31|197|false
+row|ecb:ecb_estr|rate|205|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-31@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-31|198|false
+row|ecb:ecb_estr|rate|206|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-31@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-31|199|false
+row|ecb:ecb_estr|rate|207|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-31@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-31|200|false
+row|ecb:ecb_estr|rate|208|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-31@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-31|201|false
+row|ecb:ecb_estr|rate|209|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-31@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-31|202|false
+row|ecb:ecb_estr|rate|20|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-14@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-14|13|false
+row|ecb:ecb_estr|rate|210|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-31@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-31|203|false
+row|ecb:ecb_estr|rate|211|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-01@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-01|204|false
+row|ecb:ecb_estr|rate|212|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-01@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-01|205|false
+row|ecb:ecb_estr|rate|213|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-01@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-01|206|false
+row|ecb:ecb_estr|rate|214|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-01@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-01|207|false
+row|ecb:ecb_estr|rate|215|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-01@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-01|208|false
+row|ecb:ecb_estr|rate|216|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-01@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-01|209|false
+row|ecb:ecb_estr|rate|217|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-01@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-01|210|false
+row|ecb:ecb_estr|rate|218|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-02@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-02|211|false
+row|ecb:ecb_estr|rate|219|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-02@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-02|212|false
+row|ecb:ecb_estr|rate|21|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-14@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-14|14|false
+row|ecb:ecb_estr|rate|220|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-02@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-02|213|false
+row|ecb:ecb_estr|rate|221|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-02@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-02|214|false
+row|ecb:ecb_estr|rate|222|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-02@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-02|215|false
+row|ecb:ecb_estr|rate|223|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-02@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-02|216|false
+row|ecb:ecb_estr|rate|224|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-02@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-02|217|false
+row|ecb:ecb_estr|rate|225|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-03@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-03|218|false
+row|ecb:ecb_estr|rate|226|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-03@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-03|219|false
+row|ecb:ecb_estr|rate|227|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-03@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-03|220|false
+row|ecb:ecb_estr|rate|228|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-03@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-03|221|false
+row|ecb:ecb_estr|rate|229|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-03@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-03|222|false
+row|ecb:ecb_estr|rate|22|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-15@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-15|15|false
+row|ecb:ecb_estr|rate|230|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-03@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-03|223|false
+row|ecb:ecb_estr|rate|231|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-03@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-03|224|false
+row|ecb:ecb_estr|rate|232|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-04@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-04|225|false
+row|ecb:ecb_estr|rate|233|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-04@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-04|226|false
+row|ecb:ecb_estr|rate|234|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-04@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-04|227|false
+row|ecb:ecb_estr|rate|235|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-04@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-04|228|false
+row|ecb:ecb_estr|rate|236|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-04@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-04|229|false
+row|ecb:ecb_estr|rate|237|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-04@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-04|230|false
+row|ecb:ecb_estr|rate|238|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-04@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-04|231|false
+row|ecb:ecb_estr|rate|239|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-07@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-07|232|false
+row|ecb:ecb_estr|rate|23|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-15@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-15|16|false
+row|ecb:ecb_estr|rate|240|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-07@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-07|233|false
+row|ecb:ecb_estr|rate|241|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-07@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-07|234|false
+row|ecb:ecb_estr|rate|242|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-07@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-07|235|false
+row|ecb:ecb_estr|rate|243|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-07@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-07|236|false
+row|ecb:ecb_estr|rate|244|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-07@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-07|237|false
+row|ecb:ecb_estr|rate|245|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-07@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-07|238|false
+row|ecb:ecb_estr|rate|246|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-08@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-08|239|false
+row|ecb:ecb_estr|rate|247|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-08@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-08|240|false
+row|ecb:ecb_estr|rate|248|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-08@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-08|241|false
+row|ecb:ecb_estr|rate|249|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-08@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-08|242|false
+row|ecb:ecb_estr|rate|24|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-15@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-15|17|false
+row|ecb:ecb_estr|rate|250|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-08@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-08|243|false
+row|ecb:ecb_estr|rate|251|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-08@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-08|244|false
+row|ecb:ecb_estr|rate|252|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-08@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-08|245|false
+row|ecb:ecb_estr|rate|253|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-09@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-09|246|false
+row|ecb:ecb_estr|rate|254|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-09@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-09|247|false
+row|ecb:ecb_estr|rate|255|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-09@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-09|248|false
+row|ecb:ecb_estr|rate|256|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-09@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-09|249|false
+row|ecb:ecb_estr|rate|257|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-09@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-09|250|false
+row|ecb:ecb_estr|rate|258|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-09@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-09|251|false
+row|ecb:ecb_estr|rate|259|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-09@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-09|252|false
+row|ecb:ecb_estr|rate|25|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-15@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-15|18|false
+row|ecb:ecb_estr|rate|260|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-10@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-10|253|false
+row|ecb:ecb_estr|rate|261|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-10@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-10|254|false
+row|ecb:ecb_estr|rate|262|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-10@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-10|255|false
+row|ecb:ecb_estr|rate|263|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-10@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-10|256|false
+row|ecb:ecb_estr|rate|264|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-10@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-10|257|false
+row|ecb:ecb_estr|rate|265|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-10@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-10|258|false
+row|ecb:ecb_estr|rate|266|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-10@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-10|259|false
+row|ecb:ecb_estr|rate|267|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-11@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-11|260|false
+row|ecb:ecb_estr|rate|268|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-11@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-11|261|false
+row|ecb:ecb_estr|rate|269|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-11@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-11|262|false
+row|ecb:ecb_estr|rate|26|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-15@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-15|19|false
+row|ecb:ecb_estr|rate|270|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-11@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-11|263|false
+row|ecb:ecb_estr|rate|271|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-11@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-11|264|false
+row|ecb:ecb_estr|rate|272|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-11@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-11|265|false
+row|ecb:ecb_estr|rate|273|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-11@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-11|266|false
+row|ecb:ecb_estr|rate|274|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-14@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-14|267|false
+row|ecb:ecb_estr|rate|275|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-14@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-14|268|false
+row|ecb:ecb_estr|rate|276|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-14@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-14|269|false
+row|ecb:ecb_estr|rate|277|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-14@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-14|270|false
+row|ecb:ecb_estr|rate|278|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-14@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-14|271|false
+row|ecb:ecb_estr|rate|279|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-14@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-14|272|false
+row|ecb:ecb_estr|rate|27|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-15@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-15|20|false
+row|ecb:ecb_estr|rate|280|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-14@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-14|273|false
+row|ecb:ecb_estr|rate|281|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-15@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-15|274|false
+row|ecb:ecb_estr|rate|282|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-15@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-15|275|false
+row|ecb:ecb_estr|rate|283|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-15@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-15|276|false
+row|ecb:ecb_estr|rate|284|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-15@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-15|277|false
+row|ecb:ecb_estr|rate|285|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-15@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-15|278|false
+row|ecb:ecb_estr|rate|286|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-15@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-15|279|false
+row|ecb:ecb_estr|rate|287|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-15@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-15|280|false
+row|ecb:ecb_estr|rate|288|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-16@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-16|281|false
+row|ecb:ecb_estr|rate|289|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-16@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-16|282|false
+row|ecb:ecb_estr|rate|28|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-15@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-15|21|false
+row|ecb:ecb_estr|rate|290|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-16@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-16|283|false
+row|ecb:ecb_estr|rate|291|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-16@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-16|284|false
+row|ecb:ecb_estr|rate|292|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-16@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-16|285|false
+row|ecb:ecb_estr|rate|293|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-16@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-16|286|false
+row|ecb:ecb_estr|rate|294|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-16@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-16|287|false
+row|ecb:ecb_estr|rate|295|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-17@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-17|288|false
+row|ecb:ecb_estr|rate|296|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-17@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-17|289|false
+row|ecb:ecb_estr|rate|297|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-17@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-17|290|false
+row|ecb:ecb_estr|rate|298|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-17@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-17|291|false
+row|ecb:ecb_estr|rate|299|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-17@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-17|292|false
+row|ecb:ecb_estr|rate|29|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-16@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-16|22|false
+row|ecb:ecb_estr|rate|2|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-12@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-12|0|false
+row|ecb:ecb_estr|rate|300|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-17@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-17|293|false
+row|ecb:ecb_estr|rate|301|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-17@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-17|294|false
+row|ecb:ecb_estr|rate|302|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-18@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-18|295|false
+row|ecb:ecb_estr|rate|303|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-18@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-18|296|false
+row|ecb:ecb_estr|rate|304|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-18@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-18|297|false
+row|ecb:ecb_estr|rate|305|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-18@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-18|298|false
+row|ecb:ecb_estr|rate|306|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-18@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-18|299|false
+row|ecb:ecb_estr|rate|307|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-18@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-18|300|false
+row|ecb:ecb_estr|rate|308|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-18@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-18|301|false
+row|ecb:ecb_estr|rate|309|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-21@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-21|302|false
+row|ecb:ecb_estr|rate|30|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-16@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-16|23|false
+row|ecb:ecb_estr|rate|310|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-21@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-21|303|false
+row|ecb:ecb_estr|rate|311|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-21@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-21|304|false
+row|ecb:ecb_estr|rate|312|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-21@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-21|305|false
+row|ecb:ecb_estr|rate|313|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-21@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-21|306|false
+row|ecb:ecb_estr|rate|314|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-21@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-21|307|false
+row|ecb:ecb_estr|rate|315|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-21@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-21|308|false
+row|ecb:ecb_estr|rate|316|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-22@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-22|309|false
+row|ecb:ecb_estr|rate|317|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-22@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-22|310|false
+row|ecb:ecb_estr|rate|318|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-22@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-22|311|false
+row|ecb:ecb_estr|rate|319|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-22@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-22|312|false
+row|ecb:ecb_estr|rate|31|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-16@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-16|24|false
+row|ecb:ecb_estr|rate|320|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-22@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-22|313|false
+row|ecb:ecb_estr|rate|321|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-22@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-22|314|false
+row|ecb:ecb_estr|rate|322|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-22@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-22|315|false
+row|ecb:ecb_estr|rate|323|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-23@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-23|316|false
+row|ecb:ecb_estr|rate|324|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-23@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-23|317|false
+row|ecb:ecb_estr|rate|325|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-23@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-23|318|false
+row|ecb:ecb_estr|rate|326|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-23@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-23|319|false
+row|ecb:ecb_estr|rate|327|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-23@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-23|320|false
+row|ecb:ecb_estr|rate|328|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-23@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-23|321|false
+row|ecb:ecb_estr|rate|329|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-23@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-23|322|false
+row|ecb:ecb_estr|rate|32|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-16@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-16|25|false
+row|ecb:ecb_estr|rate|330|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-24@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-24|323|false
+row|ecb:ecb_estr|rate|331|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-24@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-24|324|false
+row|ecb:ecb_estr|rate|332|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-24@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-24|325|false
+row|ecb:ecb_estr|rate|333|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-24@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-24|326|false
+row|ecb:ecb_estr|rate|334|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-24@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-24|327|false
+row|ecb:ecb_estr|rate|335|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-24@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-24|328|false
+row|ecb:ecb_estr|rate|336|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-24@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-24|329|false
+row|ecb:ecb_estr|rate|337|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-25@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-25|330|false
+row|ecb:ecb_estr|rate|338|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-25@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-25|331|false
+row|ecb:ecb_estr|rate|339|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-25@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-25|332|false
+row|ecb:ecb_estr|rate|33|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-16@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-16|26|false
+row|ecb:ecb_estr|rate|340|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-25@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-25|333|false
+row|ecb:ecb_estr|rate|341|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-25@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-25|334|false
+row|ecb:ecb_estr|rate|342|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-25@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-25|335|false
+row|ecb:ecb_estr|rate|343|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-25@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-25|336|false
+row|ecb:ecb_estr|rate|344|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-28@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-28|337|false
+row|ecb:ecb_estr|rate|345|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-28@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-28|338|false
+row|ecb:ecb_estr|rate|346|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-28@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-28|339|false
+row|ecb:ecb_estr|rate|347|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-28@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-28|340|false
+row|ecb:ecb_estr|rate|348|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-28@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-28|341|false
+row|ecb:ecb_estr|rate|349|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-28@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-28|342|false
+row|ecb:ecb_estr|rate|34|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-16@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-16|27|false
+row|ecb:ecb_estr|rate|350|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-28@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-28|343|false
+row|ecb:ecb_estr|rate|351|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-29@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-29|344|false
+row|ecb:ecb_estr|rate|352|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-29@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-29|345|false
+row|ecb:ecb_estr|rate|353|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-29@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-29|346|false
+row|ecb:ecb_estr|rate|354|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-29@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-29|347|false
+row|ecb:ecb_estr|rate|355|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-29@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-29|348|false
+row|ecb:ecb_estr|rate|356|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-29@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-29|349|false
+row|ecb:ecb_estr|rate|357|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-29@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-29|350|false
+row|ecb:ecb_estr|rate|358|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-09-30@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-09-30|351|false
+row|ecb:ecb_estr|rate|359|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-09-30@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-09-30|352|false
+row|ecb:ecb_estr|rate|35|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-16@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-16|28|false
+row|ecb:ecb_estr|rate|360|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-09-30@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-09-30|353|false
+row|ecb:ecb_estr|rate|361|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-09-30@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-09-30|354|false
+row|ecb:ecb_estr|rate|362|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-09-30@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-09-30|355|false
+row|ecb:ecb_estr|rate|363|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-09-30@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-09-30|356|false
+row|ecb:ecb_estr|rate|364|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-09-30@INS-01JREF00000000000000000012|1|ESTR|1||2026-09-30|357|false
+row|ecb:ecb_estr|rate|365|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-01@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-01|358|false
+row|ecb:ecb_estr|rate|366|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-01@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-01|359|false
+row|ecb:ecb_estr|rate|367|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-01@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-01|360|false
+row|ecb:ecb_estr|rate|368|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-01@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-01|361|false
+row|ecb:ecb_estr|rate|369|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-01@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-01|362|false
+row|ecb:ecb_estr|rate|36|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-19@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-19|29|false
+row|ecb:ecb_estr|rate|370|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-01@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-01|363|false
+row|ecb:ecb_estr|rate|371|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-01@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-01|364|false
+row|ecb:ecb_estr|rate|372|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-02@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-02|365|false
+row|ecb:ecb_estr|rate|373|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-02@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-02|366|false
+row|ecb:ecb_estr|rate|374|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-02@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-02|367|false
+row|ecb:ecb_estr|rate|375|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-02@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-02|368|false
+row|ecb:ecb_estr|rate|376|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-02@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-02|369|false
+row|ecb:ecb_estr|rate|377|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-02@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-02|370|false
+row|ecb:ecb_estr|rate|378|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-02@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-02|371|false
+row|ecb:ecb_estr|rate|379|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-05@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-05|372|false
+row|ecb:ecb_estr|rate|37|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-19@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-19|30|false
+row|ecb:ecb_estr|rate|380|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-05@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-05|373|false
+row|ecb:ecb_estr|rate|381|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-05@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-05|374|false
+row|ecb:ecb_estr|rate|382|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-05@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-05|375|false
+row|ecb:ecb_estr|rate|383|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-05@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-05|376|false
+row|ecb:ecb_estr|rate|384|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-05@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-05|377|false
+row|ecb:ecb_estr|rate|385|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-05@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-05|378|false
+row|ecb:ecb_estr|rate|386|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-06@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-06|379|false
+row|ecb:ecb_estr|rate|387|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-06@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-06|380|false
+row|ecb:ecb_estr|rate|388|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-06@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-06|381|false
+row|ecb:ecb_estr|rate|389|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-06@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-06|382|false
+row|ecb:ecb_estr|rate|38|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-19@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-19|31|false
+row|ecb:ecb_estr|rate|390|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-06@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-06|383|false
+row|ecb:ecb_estr|rate|391|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-06@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-06|384|false
+row|ecb:ecb_estr|rate|392|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-06@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-06|385|false
+row|ecb:ecb_estr|rate|393|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-07@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-07|386|false
+row|ecb:ecb_estr|rate|394|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-07@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-07|387|false
+row|ecb:ecb_estr|rate|395|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-07@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-07|388|false
+row|ecb:ecb_estr|rate|396|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-07@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-07|389|false
+row|ecb:ecb_estr|rate|397|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-07@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-07|390|false
+row|ecb:ecb_estr|rate|398|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-07@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-07|391|false
+row|ecb:ecb_estr|rate|399|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-07@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-07|392|false
+row|ecb:ecb_estr|rate|39|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-19@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-19|32|false
+row|ecb:ecb_estr|rate|3|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-12@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-12|0|false
+row|ecb:ecb_estr|rate|400|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-08@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-08|393|false
+row|ecb:ecb_estr|rate|401|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-08@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-08|394|false
+row|ecb:ecb_estr|rate|402|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-08@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-08|395|false
+row|ecb:ecb_estr|rate|403|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-08@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-08|396|false
+row|ecb:ecb_estr|rate|404|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-08@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-08|397|false
+row|ecb:ecb_estr|rate|405|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-08@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-08|398|false
+row|ecb:ecb_estr|rate|406|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-08@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-08|399|false
+row|ecb:ecb_estr|rate|407|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-09@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-09|400|false
+row|ecb:ecb_estr|rate|408|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-09@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-09|401|false
+row|ecb:ecb_estr|rate|409|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-09@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-09|402|false
+row|ecb:ecb_estr|rate|40|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-19@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-19|33|false
+row|ecb:ecb_estr|rate|410|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-09@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-09|403|false
+row|ecb:ecb_estr|rate|411|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-09@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-09|404|false
+row|ecb:ecb_estr|rate|412|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-09@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-09|405|false
+row|ecb:ecb_estr|rate|413|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-09@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-09|406|false
+row|ecb:ecb_estr|rate|41|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-19@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-19|34|false
+row|ecb:ecb_estr|rate|42|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-19@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-19|35|false
+row|ecb:ecb_estr|rate|43|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-20@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-20|36|false
+row|ecb:ecb_estr|rate|44|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-20@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-20|37|false
+row|ecb:ecb_estr|rate|45|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-20@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-20|38|false
+row|ecb:ecb_estr|rate|46|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-20@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-20|39|false
+row|ecb:ecb_estr|rate|47|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-20@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-20|40|false
+row|ecb:ecb_estr|rate|48|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-20@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-20|41|false
+row|ecb:ecb_estr|rate|49|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-20@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-20|42|false
+row|ecb:ecb_estr|rate|4|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-12@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-12|0|false
+row|ecb:ecb_estr|rate|50|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-21@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-21|43|false
+row|ecb:ecb_estr|rate|51|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-21@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-21|44|false
+row|ecb:ecb_estr|rate|52|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-21@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-21|45|false
+row|ecb:ecb_estr|rate|53|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-21@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-21|46|false
+row|ecb:ecb_estr|rate|54|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-21@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-21|47|false
+row|ecb:ecb_estr|rate|55|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-21@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-21|48|false
+row|ecb:ecb_estr|rate|56|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-21@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-21|49|false
+row|ecb:ecb_estr|rate|57|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-22@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-22|50|false
+row|ecb:ecb_estr|rate|58|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-22@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-22|51|false
+row|ecb:ecb_estr|rate|59|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-10-22@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-10-22|52|false
+row|ecb:ecb_estr|rate|5|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-12@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-12|0|false
+row|ecb:ecb_estr|rate|60|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-10-22@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-10-22|53|false
+row|ecb:ecb_estr|rate|61|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-10-22@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-10-22|54|false
+row|ecb:ecb_estr|rate|62|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-22@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-22|55|false
+row|ecb:ecb_estr|rate|63|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-22@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-22|56|false
+row|ecb:ecb_estr|rate|64|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-03@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-03|57|false
+row|ecb:ecb_estr|rate|65|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-03@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-03|58|false
+row|ecb:ecb_estr|rate|66|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-03@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-03|59|false
+row|ecb:ecb_estr|rate|67|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-03@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-03|60|false
+row|ecb:ecb_estr|rate|68|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-03@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-03|61|false
+row|ecb:ecb_estr|rate|69|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-03@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-03|62|false
+row|ecb:ecb_estr|rate|6|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-10-12@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-10-12|0|false
+row|ecb:ecb_estr|rate|70|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-03@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-03|63|false
+row|ecb:ecb_estr|rate|71|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-04@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-04|64|false
+row|ecb:ecb_estr|rate|72|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-04@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-04|65|false
+row|ecb:ecb_estr|rate|73|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-04@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-04|66|false
+row|ecb:ecb_estr|rate|74|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-04@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-04|67|false
+row|ecb:ecb_estr|rate|75|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-04@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-04|68|false
+row|ecb:ecb_estr|rate|76|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-04@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-04|69|false
+row|ecb:ecb_estr|rate|77|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-04@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-04|70|false
+row|ecb:ecb_estr|rate|78|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-05@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-05|71|false
+row|ecb:ecb_estr|rate|79|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-05@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-05|72|false
+row|ecb:ecb_estr|rate|7|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-10-12@INS-01JREF00000000000000000012|1|ESTR|1||2026-10-12|0|false
+row|ecb:ecb_estr|rate|80|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-05@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-05|73|false
+row|ecb:ecb_estr|rate|81|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-05@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-05|74|false
+row|ecb:ecb_estr|rate|82|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-05@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-05|75|false
+row|ecb:ecb_estr|rate|83|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-05@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-05|76|false
+row|ecb:ecb_estr|rate|84|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-05@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-05|77|false
+row|ecb:ecb_estr|rate|85|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-06@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-06|78|false
+row|ecb:ecb_estr|rate|86|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-06@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-06|79|false
+row|ecb:ecb_estr|rate|87|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-06@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-06|80|false
+row|ecb:ecb_estr|rate|88|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-06@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-06|81|false
+row|ecb:ecb_estr|rate|89|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-06@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-06|82|false
+row|ecb:ecb_estr|rate|8|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-10-13@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-10-13|1|false
+row|ecb:ecb_estr|rate|90|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-06@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-06|83|false
+row|ecb:ecb_estr|rate|91|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-06@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-06|84|false
+row|ecb:ecb_estr|rate|92|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-07@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-07|85|false
+row|ecb:ecb_estr|rate|93|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-07@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-07|86|false
+row|ecb:ecb_estr|rate|94|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-07@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-07|87|false
+row|ecb:ecb_estr|rate|95|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-07@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-07|88|false
+row|ecb:ecb_estr|rate|96|EST.B.EU000A2QQF40.CR:average:-:act_360:simple:2026-08-07@INS-01JREF00000000000000000016|1|ESTR 6-month compounded average|2||2026-08-07|89|false
+row|ecb:ecb_estr|rate|97|EST.B.EU000A2QQF57.CR:average:-:act_360:simple:2026-08-07@INS-01JREF00000000000000000017|1|ESTR 12-month compounded average|2||2026-08-07|90|false
+row|ecb:ecb_estr|rate|98|EST.B.EU000A2X2A25.WT:fixing:-:act_360:simple:2026-08-07@INS-01JREF00000000000000000012|1|ESTR|1||2026-08-07|91|false
+row|ecb:ecb_estr|rate|99|EST.B.EU000A2QQF08.CI:index_level:-:act_360:compounded/360:2026-08-10@INS-01JREF00000000000000000018|1|ESTR compounded index|3||2026-08-10|92|false
+row|ecb:ecb_estr|rate|9|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-10-13@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-10-13|2|false
 row|ecb:ecb_fx|price|100|JPY:2026-10-12|1|EUR|1||2026-10-12|99|false
 row|ecb:ecb_fx|price|101|JPY:2026-10-13|1|EUR|1||2026-10-13|100|false
 row|ecb:ecb_fx|price|102|JPY:2026-10-14|1|EUR|1||2026-10-14|101|false

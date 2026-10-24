@@ -76,7 +76,6 @@ def _feed() -> tuple[Feed, EstrFeed]:
         return ops.ResolveIdentifierResult(found=True, instrument_id=f"INS-{named.value}")
 
     recorder.answer("ResolveIdentifier", resolved)
-    recorder.answer("RecordRates", lambda p: ops.RecordRatesResult(recorded=len(p.rates)))
     feed = Feed(recorder, SyntheticPortal(lambda: AT), RawStore(), now=lambda: AT)
     return feed, EstrFeed(feed)
 

@@ -187,7 +187,8 @@ async def test_the_averages_and_the_index(tmp_path: Path) -> None:
     assert index.value.unit == ops.VALUE_UNIT_INDEX
     assert index.value.index_base == "2019-10-01=100"
     assert str(as_decimal(index.value.value)) == "110.05474139"
-    assert not index.HasField("convention")
+    assert index.convention.compounding == ops.COMPOUNDING_COMPOUNDED
+    assert index.convention.periods_per_year == 360
 
 
 async def test_only_the_latest_day_states_its_published_time(tmp_path: Path) -> None:
@@ -468,3 +469,41 @@ def test_the_dataset_is_declared_as_the_spec_has_it() -> None:
     licence = declared.licence_default
     assert licence is not None and licence.kept and licence.display
     assert licence.derived_use_terms == "not_restricted" and not licence.personal_use
+
+
+async def test_a_record_held_later_is_asked_again_at_the_next_check(tmp_path: Path) -> None:
+    # The deployment comes to hold the record after the first check (its
+    # licence list read late): the next check finds it, reporting nothing new.
+    held = {"yet": False}
+    plugin = recorder()
+
+    def resolved(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
+        code = params.identifiers[0].value
+        if code == "ESTR compounded index" and not held["yet"]:
+            return ops.ResolveIdentifierResult(found=False, miss_reason=ops.MISS_REASON_NOT_FOUND)
+        return ops.ResolveIdentifierResult(found=True, instrument_id=ESTR_IDS[code])
+
+    plugin.answer("ResolveIdentifier", resolved)
+    work = estr_feed(tmp_path, plugin)
+    await work.check()
+    assert work.status.records["ESTR compounded index"].miss
+    assert INDEX not in {r.meta.subjects[0].entity_id for r in rows_of(plugin)}
+    held["yet"] = True
+    work._modified = ""
+    await work.check()
+    assert work.status.records["ESTR compounded index"].instrument_id == INDEX
+    assert INDEX in {r.meta.subjects[0].entity_id for r in rows_of(plugin)}
+    assert len(plugin.on("ReportMissingInstrument")) == 1
+    assert work.status.backfill == "Done through 2026-10-11"
+
+
+async def test_a_restart_names_the_answer_each_rate_was_first_read_from(tmp_path: Path) -> None:
+    # The lake makes a changed raw reference the row's next version: a
+    # restart re-reading the range and the history names the first answers.
+    first = estr_feed(tmp_path)
+    await first.check()
+    raws = {r.meta.row_key: r.meta.raw.key for r in rows_of(first.plugin)}
+    again = estr_feed(tmp_path, at=ESTR_AT + timedelta(hours=1))
+    await again.check()
+    reread = rows_of(again.plugin)
+    assert reread and all(raws[r.meta.row_key] == r.meta.raw.key for r in reread)

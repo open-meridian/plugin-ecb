@@ -10,6 +10,10 @@ It answers its page as JSON, so the harness's runner can read it
       one read by business date: each price's dataset, row key, version,
       business date, kind, amount as text and the instrument it is in; and
       what the lake left unanswered, with why;
+  /rates?subject=ID&date=D[&dataset=D]
+      one read of rates by business date (contract v27): each rate's
+      dataset, row key, version, kind, value as text and its unit, its
+      published time, convention, volume, count and percentiles;
   /datasets
       the datasets it may read.
 
@@ -23,7 +27,7 @@ import urllib.parse
 
 import meridian
 from meridian import Interface, Page, SourceChoice
-from meridian.operations import as_money
+from meridian.operations import as_decimal, as_money
 from meridian.plugin.v1 import operations_pb2 as ops
 
 PORT = 8088
@@ -47,6 +51,27 @@ def price_json(price):
     }
 
 
+def rate_json(rate):
+    meta = rate.meta
+    return {
+        "dataset": meta.source.dataset,
+        "row_key": meta.row_key,
+        "version": meta.version,
+        "business_date": meta.business_date,
+        "subject": meta.subjects[0].entity_id if meta.subjects else "",
+        "kind": ops.RateKind.Name(rate.kind),
+        "value": str(as_decimal(rate.value.value)),
+        "unit": ops.ValueUnit.Name(rate.value.unit),
+        "index_base": rate.value.index_base,
+        "day_count": ops.DayCount.Name(rate.convention.day_count),
+        "compounding": ops.Compounding.Name(rate.convention.compounding),
+        "volume": str(as_money(rate.volume).amount) if rate.HasField("volume") else "",
+        "transaction_count": rate.transaction_count,
+        "percentiles": {str(p.percentile): str(as_decimal(p.value)) for p in rate.percentiles},
+        "published": [t.at_ns for t in meta.source_times if t.kind == ops.SOURCE_TIME_KIND_PUBLISHED],
+    }
+
+
 class Reader:
     def __init__(self, plugin):
         self.plugin = plugin
@@ -55,7 +80,7 @@ class Reader:
         one = lambda name: query.get(name, [""])[0]  # noqa: E731
         asked = {"subjects": [ops.SubjectRef(entity_id=s) for s in query.get("subject", [])]}
         if query.get("dataset"):
-            asked["sources"] = SourceChoice(named=query["dataset"])
+            asked["sources"] = SourceChoice(named=list(query["dataset"]))  # a list, never a str
         if one("kind"):
             asked["kinds"] = [one("kind")]
         if one("date"):
@@ -70,9 +95,27 @@ class Reader:
             ],
         }
 
+    async def rates(self, query):
+        asked = {"subjects": [ops.SubjectRef(entity_id=s) for s in query.get("subject", [])]}
+        if query.get("dataset"):
+            asked["sources"] = SourceChoice(named=list(query["dataset"]))  # a list, never a str
+        if query.get("date"):
+            asked["business_date"] = query["date"][0]
+        answer = await self.plugin.list_rates(**asked)
+        return {
+            "rates": [rate_json(r) for r in answer.rates],
+            "unanswered": [
+                {"subject": u.subject.entity_id, "dataset": u.dataset,
+                 "reason": ops.UnansweredReason.Name(u.reason)}
+                for u in answer.unanswered
+            ],
+        }
+
     async def answer(self, path, query):
         if path == "/prices":
             return await self.prices(query)
+        if path == "/rates":
+            return await self.rates(query)
         if path == "/datasets":
             listed = await self.plugin.list_datasets()
             return {"datasets": [d.dataset for d in listed.datasets]}

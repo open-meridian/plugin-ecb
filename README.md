@@ -14,7 +14,7 @@ plugin. This is release 0.2.0, not released yet. How to set it up and use it is 
 [docs/](docs/README.md); how a plugin like it is built is documented at
 [open-meridian.dev](https://open-meridian.dev).
 
-It is built on the SDK it pins, `open-meridian==0.32.1`, which declares
+It is built on the SDK it pins, `open-meridian==0.32.2`, which declares
 contract v27. It is stages 0 and 1 of the ECB's data plugin (meridian-design
 `spec/a-public-rates-and-filings-data-plugin.md`, §8): the reference rates
 as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
@@ -43,7 +43,8 @@ as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
   `ecb:ESTR compounded index`), resolved by the seed's symbol at the ECB:
   €STR a fixing with its volume, transactions and 25th and 75th
   percentiles, each average an average, both in per cent on actual/360,
-  simple; the index an index level, based 1 October 2019 = 100. A revision
+  simple; the index an index level, based 1 October 2019 = 100, compounded
+  daily on actual/360. A revision
   is the same row's next version, with its later published time.
 - **Every currency resolved** to the deployment's cash instrument by its
   ISO 4217 code, as of the moment it is asked, a miss reported with why.
