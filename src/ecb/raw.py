@@ -31,6 +31,12 @@ its row key and value, is noted under `firsts/<YYYY-MM>.json` at the
 storage's root, a file per month of the rates' days. A corrected rate is a
 new value, so it is noted afresh, naming the answer that corrected it.
 
+The €STR values (estr_feed.py) are noted the same way, each by its row's
+series, day and everything it states, in the same files: a currency's code
+and an ECB series key never meet. And the €STR history's backfill notes the
+day it finished through, under `estr-backfill.json`, so a restart does not
+read the history again.
+
 Where no storage is granted -- a test, a preview -- the store keeps its
 records in a directory of its own and moves nothing.
 """
@@ -44,7 +50,7 @@ import re
 import tempfile
 from collections.abc import Iterator
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -52,7 +58,7 @@ import meridian
 from meridian import edge
 
 from .convert import First, frankfurt_day, row_key
-from .portal import Fetched
+from .portal import ESTR_SERIES, Fetched
 from .rates import Rate
 
 log = logging.getLogger("ecb")
@@ -64,6 +70,8 @@ DEFAULT_WINDOW_DAYS = 3650
 MOST_WINDOW_DAYS = 36500
 #: Where each rate's first answer is noted, at the storage's root.
 FIRSTS = "firsts"
+#: Where the €STR backfill notes it finished, at the storage's root.
+BACKFILL = "estr-backfill.json"
 
 _PERIOD = re.compile(r"startPeriod=(\d{4})-(\d{2})-(\d{2})&endPeriod=(\d{4})-(\d{2})-(\d{2})")
 
@@ -73,11 +81,13 @@ def _ns(moment: datetime) -> int:
 
 
 def range_name(path: str) -> str:
-    """A short name for the range an address asks: `20261009-20261019`."""
+    """A short name for the range an address asks: `20261009-20261019` for
+    the reference rates, `est-20261012-20261022` for €STR's series."""
     found = _PERIOD.search(path)
     if found is None:
         return "answer"
-    return "".join(found.groups()[:3]) + "-" + "".join(found.groups()[3:])
+    prefix = "est-" if path.startswith(ESTR_SERIES) else ""
+    return prefix + "".join(found.groups()[:3]) + "-" + "".join(found.groups()[3:])
 
 
 @dataclass(frozen=True)
@@ -129,14 +139,20 @@ class RawStore:
         The published time is kept only when it falls on the rate's own day
         in Frankfurt: an answer read later states when the ECB last changed
         anything, not when it published this rate."""
-        month = f"{rate.day:%Y-%m}"
-        noted = self._month(month)
+        on_its_day = published_ns and frankfurt_day(published_ns) == rate.day
         name = f"{row_key(rate.currency, rate.day)}={rate.text}"
+        return self.noted(name, rate.day, key, published_ns if on_its_day else 0)
+
+    def noted(self, name: str, day: date, key: str, published_ns: int) -> tuple[First, bool]:
+        """Where the value `name` -- a row key and what it states -- of `day`
+        was first read, noting `key` and `published_ns` (0 for none) if none
+        is noted or storage no longer holds it; and whether it was noted now.
+        Which published time a value may keep is its caller's to say."""
+        noted = self._month(f"{day:%Y-%m}")
         held = noted.get(name)
         if isinstance(held, dict) and (self.root / str(held.get("key", ""))).is_file():
             return First(str(held["key"]), int(held.get("published_ns", 0))), False
-        on_its_day = published_ns and frankfurt_day(published_ns) == rate.day
-        made = First(key, published_ns if on_its_day else 0)
+        made = First(key, published_ns)
         noted[name] = {"key": made.key, "published_ns": made.published_ns}
         return made, True
 
@@ -160,6 +176,24 @@ class RawStore:
                 held = {}
             self._firsts[month] = held
         return held
+
+    # ── €STR's history, backfilled once ─────────────────────────────────
+
+    def backfilled(self) -> date | None:
+        """The last day of €STR's history recorded by the backfill, or None
+        where it has not finished (estr_feed.py)."""
+        try:
+            held = json.loads((self.root / BACKFILL).read_text())
+            return date.fromisoformat(str(held["through"]))
+        except (OSError, ValueError, KeyError, TypeError):
+            return None
+
+    def backfill_done(self, through: date) -> None:
+        """Note the backfill finished through `through`."""
+        target = self.root / BACKFILL
+        partial = target.with_suffix(".partial")
+        partial.write_text(json.dumps({"through": through.isoformat()}))
+        partial.replace(target)
 
     # ── Reading back and moving ─────────────────────────────────────────
 

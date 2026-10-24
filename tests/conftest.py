@@ -1,6 +1,6 @@
-"""Shared stand-ins: the ECB's recorded answer, a fixed clock, TARGET's
-calendar as core answers it, and the lake's wants as the sidecar delivers
-them."""
+"""Shared stand-ins: the ECB's recorded answers, a fixed clock, TARGET's
+calendar as core answers it, the platform's seeded €STR records, and the
+lake's wants as the sidecar delivers them."""
 
 from __future__ import annotations
 
@@ -16,6 +16,8 @@ from meridian.receive import Heard
 from meridian.suites import Recorder
 
 from ecb.declared import TARGET_CALENDAR
+from ecb.estr import SERIES
+from ecb.estr_feed import EstrFeed
 from ecb.feed import Feed
 from ecb.portal import SyntheticPortal
 from ecb.raw import RawStore
@@ -33,6 +35,14 @@ CODES = [
 ]  # fmt: skip
 #: The Last-Modified the recording states, in nanoseconds.
 PUBLISHED_NS = 1792418217 * 10**9
+#: After the €STR recording: 09:00 UTC on Friday 23 October 2026, €STR of
+#: Thursday 22 October published at 07:20:16 UTC.
+ESTR_AT = datetime(2026, 10, 23, 9, 0, tzinfo=UTC)
+ESTR_DATASET = f"{INSTANCE}:ecb_estr"
+ESTR_PUBLISHED_NS = 1792740016 * 10**9
+#: The platform's seeded records, as the recorder resolves them: `INS-ESTR0`
+#: for €STR, then its averages, then the index, in estr.SERIES's order.
+ESTR_IDS = {s.code: f"INS-ESTR{n}" for n, s in enumerate(SERIES)}
 
 
 def recorded() -> str:
@@ -63,12 +73,19 @@ def target_2026(params: ops.ReadCalendarParams) -> ops.ReadCalendarResult:
 
 def recorder(ambiguous: str = "", missing: str = "") -> Recorder:
     """The suite's recorder answering each ISO code with `LCL-<code>`
-    (`ambiguous` with two records, `missing` with none) and TARGET's
-    calendar."""
+    (`ambiguous` with two records, `missing` with none), each €STR record by
+    its seed's symbol at the ECB with `ESTR_IDS`'s (`missing` with none),
+    and TARGET's calendar; the SDK's recorder counts each batch of rates."""
     plugin = Recorder(INSTANCE)
 
     def resolved(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
         code = params.identifiers[0].value
+        if params.identifiers[0].source == "ecb":
+            if code == missing:
+                return ops.ResolveIdentifierResult(
+                    found=False, miss_reason=ops.MISS_REASON_NOT_FOUND
+                )
+            return ops.ResolveIdentifierResult(found=True, instrument_id=ESTR_IDS[code])
         if code == ambiguous:
             return ops.ResolveIdentifierResult(found=False, miss_reason=ops.MISS_REASON_AMBIGUOUS)
         if code == missing:
@@ -88,6 +105,14 @@ def feed(tmp: Path, plugin: Recorder | None = None, at: datetime = AT, portal: A
         RawStore(tmp),
         now=lambda: at,
     )
+
+
+def estr_feed(
+    tmp: Path, plugin: Recorder | None = None, at: datetime = ESTR_AT, portal: Any = None
+) -> EstrFeed:
+    """€STR's work beside the reference rates', on the recorder and the
+    recorded answers, at `at`."""
+    return EstrFeed(feed(tmp, plugin, at, portal))
 
 
 def want(

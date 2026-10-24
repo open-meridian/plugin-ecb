@@ -1,5 +1,5 @@
 {
-  "said": "The ECB Data Portal's real response, recorded 2026-10-19 by meridian-ecb's author: every euro foreign exchange reference rate from 3 August to 19 October 2026, as SDMX-CSV, the body gzipped. The ECB allows free use of the information on its website provided it is reproduced accurately and the ECB is cited as the source (https://www.ecb.europa.eu/home/disclaimer/html/index.en.html). Sample data answers each request for a range of days from it, and the tests read it.",
+  "said": "The ECB Data Portal's real responses, recorded by meridian-ecb's authors, the body gzipped: every euro foreign exchange reference rate from 3 August to 19 October 2026 (recorded 2026-10-19), and every euro short-term rate (€STR) series -- the rate with its volume, transactions, banks and percentiles, its compounded averages and its compounded index -- from 3 August to 22 October 2026 (recorded 2026-10-23), as SDMX-CSV. The ECB allows free use of the information on its website provided it is reproduced accurately and the ECB is cited as the source (https://www.ecb.europa.eu/home/disclaimer/html/index.en.html). Sample data answers each request for a range of days from them, and the tests read them.",
   "response": {
     "path": "/service/data/EXR/D..EUR.SP00.A?format=csvdata&startPeriod=2026-08-03&endPeriod=2026-10-19",
     "file": "exr-20260803-20261019.csv.gz",
@@ -8,5 +8,14 @@
     "last_modified": "Mon, 19 Oct 2026 13:56:57 GMT",
     "first_day": "2026-08-03",
     "last_day": "2026-10-19"
+  },
+  "estr": {
+    "path": "/service/data/EST/B..?format=csvdata&startPeriod=2026-08-03&endPeriod=2026-10-22",
+    "file": "est-20260803-20261022.csv.gz",
+    "status": 200,
+    "date": "Fri, 23 Oct 2026 16:40:33 GMT",
+    "last_modified": "Fri, 23 Oct 2026 07:20:16 GMT",
+    "first_day": "2026-08-03",
+    "last_day": "2026-10-22"
   }
 }

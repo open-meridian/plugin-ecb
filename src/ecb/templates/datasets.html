@@ -1,42 +1,45 @@
 {#- Datasets, at admin: the data role's (meridian/roles/data/datasets.html),
     with the ECB's nuance at its blocks only -- the lines it could not read,
-    how many wants there are past the latest few drawn, "Lag" as a column of
-    "Served" (the median published-minus-valid time), and "Records": each
-    currency the ECB rates, with the deployment's instrument for it,
-    searched and paged, under the attribution the ECB's terms ask for (the
-    spec's §5). No rate: prices are the reading roles'. -#}
+    "Lag" as a column of
+    "Served" (the median published-minus-valid time), and "Records": the
+    seven €STR records, then each currency the ECB rates, with the
+    deployment's instrument for each, searched and paged in one table, under
+    the attribution the ECB's terms ask for (the spec's §5), its heading in
+    its search's row and the section left out until a record is read, so the
+    page fits one screen. No rate: prices and rates are the reading
+    roles'. -#}
 {% extends "meridian/roles/data/datasets.html" %}
 {% import "meridian/kit.html" as kit %}
 {% block status %}{{ kit.status({"state": state[0], "label": state[1], "detail": state[2], "at": checked_at, "at_label": "Last checked"}) }}{% endblock %}
 {% block vendor_notices %}
 {% if data.unread %}<div class="notice warn" role="status">The portal stated a rate the plugin could not read, not recorded: {{ data.unread|join("; ") }}</div>{% endif %}
-{% if wants > data.wants|length %}<p class="muted">The latest {{ data.wants|length }} of {{ wants }} wants are shown.</p>{% endif %}
 {% endblock %}
 {% block vendor_columns %}{% if row is none %}<th class="wide-only">Lag</th>{% else %}{% set lag = data.lag|selectattr("dataset", "equalto", row.dataset)|first %}<td class="wide-only">{{ lag.median if lag and lag.rates else "None yet" }}</td>{% endif %}{% endblock %}
 {% block vendor_sections %}
+{% if data.records or data.rates %}
 <section class="panel">
-<h2>Records</h2>
-{% if data.records %}
 <form class="filters" method="get" role="search">
-<input type="search" name="q" value="{{ query }}" placeholder="Search currencies" aria-label="Search currencies by code or name">
-<button>Search</button>{% if query %} <a href="?">Clear</a>{% endif %}
-<span class="muted">{{ shown|length }} of {{ data.records|length }}. Source: European Central Bank</span></form>
-{% if shown %}
+<h2>Records</h2>
+<input type="search" name="q" value="{{ query }}" placeholder="Search records" aria-label="Search records by code or name">
+<button>Search</button>{% if query %} <a class="wide-only" href="?">Clear</a>{% endif %}
+<span class="muted wide-only">{{ shown_rates|length + shown|length }} of {{ data.rates|length + data.records|length }}. Source: European Central Bank</span></form>
+{% if shown or shown_rates %}
 <om-pager>
 <table class="one-line">
-<thead><tr><th>Code</th><th class="wide-only">The ECB's name</th><th class="wide-only">Price of</th><th>Instrument</th><th class="more"><span class="visually-hidden">Details</span></th></tr></thead>
+<thead><tr><th>Code</th><th class="wide-only">Name</th><th class="wide-only">Recorded as</th><th>Instrument</th><th class="more"><span class="visually-hidden">Details</span></th></tr></thead>
 <tbody>
+{% for r in shown_rates %}
+<tr data-code="{{ r.code }}"><td><code>{{ r.code }}</code></td><td class="wide-only">{{ r.name }}</td><td class="wide-only">{{ recorded_as[r.kind] }} in ecb_estr</td><td>{% if r.instrument_id %}<code>{{ r.instrument_id }}</code>{% else %}<span class="badge warn">{{ r.miss or "not yet resolved" }}</span>{% endif %}</td><td class="more"><details class="row-detail" name="records"><summary aria-label="Details of {{ r.code }}">…</summary><div class="row-detail-pop"><h3>{{ r.name }}</h3><dl><dt>The ECB's series</dt><dd><code>{{ r.series }}</code></dd><dt>Recorded as</dt><dd>{{ recorded_as[r.kind] }}, in the dataset ecb_estr</dd><dt>Latest day recorded</dt><dd>{{ (r.latest_day|day) if r.latest_day else "None yet" }}</dd><dt>The deployment's instrument</dt><dd>{% if r.instrument_id %}<code>{{ r.instrument_id }}</code>, the platform's record <code>ecb:{{ r.code }}</code>{% else %}None: {{ r.miss or "not yet resolved" }}; its rates wait until it resolves{% endif %}</dd></dl></div></details></td></tr>
+{% endfor %}
 {% for r in shown %}
-<tr data-code="{{ r.code }}"><td><code>{{ r.code }}</code></td><td class="wide-only">{{ r.name }}</td><td class="wide-only">{{ r.price_of }}</td><td>{% if r.instrument_id %}<code>{{ r.instrument_id }}</code>{% else %}<span class="badge warn">{{ r.miss or "not yet resolved" }}</span>{% endif %}</td><td class="more"><details class="row-detail" name="records"><summary aria-label="Details of {{ r.code }}">…</summary><div class="row-detail-pop"><h3>{{ r.code }}</h3><dl><dt>The ECB's name</dt><dd>{{ r.name or r.code }}</dd><dt>Each rate is the price of</dt><dd>{{ r.price_of }}</dd><dt>The deployment's instrument</dt><dd>{% if r.instrument_id %}<code>{{ r.instrument_id }}</code>, its cash instrument by ISO 4217 {{ r.code }}{% else %}None: {{ r.miss or "not yet resolved" }}, reported missing; its rates wait until it resolves{% endif %}</dd></dl></div></details></td></tr>
+<tr data-code="{{ r.code }}"><td><code>{{ r.code }}</code></td><td class="wide-only">{{ r.name }}</td><td class="wide-only">{{ r.price_of }}</td><td>{% if r.instrument_id %}<code>{{ r.instrument_id }}</code>{% else %}<span class="badge warn">{{ r.miss or "not yet resolved" }}</span>{% endif %}</td><td class="more"><details class="row-detail" name="records"><summary aria-label="Details of {{ r.code }}">…</summary><div class="row-detail-pop"><h3>{{ r.code }}</h3><dl><dt>The ECB's name</dt><dd>{{ r.name or r.code }}</dd><dt>Each rate is the price of</dt><dd>{{ r.price_of }}, in the dataset ecb_fx</dd><dt>The deployment's instrument</dt><dd>{% if r.instrument_id %}<code>{{ r.instrument_id }}</code>, its cash instrument by ISO 4217 {{ r.code }}{% else %}None: {{ r.miss or "not yet resolved" }}, reported missing; its rates wait until it resolves{% endif %}</dd></dl></div></details></td></tr>
 {% endfor %}
 </tbody>
 </table>
 </om-pager>
 {% else %}
-<div class="empty-state"><strong>No currency matches "{{ query }}"</strong><p>Search by its ISO code or the ECB's name for it.</p></div>
-{% endif %}
-{% else %}
-<p class="muted"><strong>No rates read yet:</strong> each currency appears once the plugin has read the ECB's current rates.</p>
+<div class="empty-state"><strong>No record matches "{{ query }}"</strong><p>Search by a currency's ISO code, a rate's code or the ECB's name for either.</p></div>
 {% endif %}
 </section>
+{% endif %}
 {% endblock %}

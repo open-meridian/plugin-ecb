@@ -10,4 +10,4 @@ asked to change the plugin and see it running. `CLAUDE.local.md` and
 
 In the Open Meridian workspace, the workspace's own `CLAUDE.md` and
 meridian-design's spec for this plugin
-(`spec/a-public-rates-and-filings-data-plugin.md`, stage 0) come first.
+(`spec/a-public-rates-and-filings-data-plugin.md`, stages 0 and 1) come first.

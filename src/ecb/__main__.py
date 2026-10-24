@@ -1,15 +1,18 @@
-"""The European Central Bank's euro foreign exchange reference rates as an
-Open Meridian data plugin: stage 0 of the ECB's data plugin
-(spec/a-public-rates-and-filings-data-plugin §8; one plugin per publisher's
-feed, rulings 343 to 349). Each TARGET business day's reference rates into
-the deployment's lake, each rate the price of the euro's cash instrument in
-the other currency, as the ECB quotes it.
+"""The European Central Bank's euro foreign exchange reference rates and euro
+short-term rate as an Open Meridian data plugin: stages 0 and 1 of the ECB's
+data plugin (spec/a-public-rates-and-filings-data-plugin §8; one plugin per
+publisher's feed, rulings 343 to 349). Each TARGET business day's reference
+rates into the deployment's lake, each rate the price of the euro's cash
+instrument in the other currency, as the ECB quotes it (`ecb_fx`); and each
+day's €STR, its compounded averages and its compounded index as rates
+(`ecb_estr`, contract v27's rates slice).
 
 It connects to the sidecar it is launched beside with its catalogue, its
 storage and its one setting (declaration.py), serves its two pages
 (page.py), hears what the lake wants of it, and reads the ECB's current
-rates at start and every hour, recording what it has not recorded in this
-process (feed.py). What the portal answered is kept in the storage the
+reference rates and €STR at start and every hour, recording what it has not
+recorded in this process (feed.py, estr_feed.py), and €STR's history once
+(estr_feed.py). What the portal answered is kept in the storage the
 deployment grants (raw.py), and moved past its window as the settings say.
 It reads which of its datasets a deployment admin has licensed, on start and
 every minute, and reports the data role's figures on its heartbeat. It holds
@@ -32,6 +35,7 @@ import signal
 import meridian
 
 from .declaration import DECLARATION, PORT
+from .estr_feed import EstrFeed
 from .feed import Feed
 from .page import figures, hold, pages
 from .portal import portal
@@ -70,19 +74,20 @@ async def watch_settings(
         await asyncio.sleep(RETRY_SECONDS)
 
 
-async def check(feed: Feed, wake: asyncio.Event) -> None:
-    """Read the current rates once the settings have come, then hourly, or
-    at once when the settings change."""
+async def check(feed: Feed, estr: EstrFeed, wake: asyncio.Event) -> None:
+    """Read the current rates and €STR once the settings have come, then
+    hourly, or at once when the settings change."""
     await wake.wait()
     while True:
         wake.clear()
-        try:
-            await feed.check()
-        except meridian.MeridianError as failed:
-            # The sidecar refused something a recording needed; say so and
-            # keep the schedule rather than spin.
-            feed.status.error = f"the deployment refused a recording: {failed}"
-            log.warning("this check stopped: %s", failed)
+        for status, work in ((feed.status, feed.check), (estr.status, estr.check)):
+            try:
+                await work()
+            except meridian.MeridianError as failed:
+                # The sidecar refused something a recording needed; say so
+                # and keep the schedule rather than spin.
+                status.error = f"the deployment refused a recording: {failed}"
+                log.warning("this check stopped: %s", failed)
         with contextlib.suppress(TimeoutError):
             await asyncio.wait_for(wake.wait(), timeout=CHECK_SECONDS)
 
@@ -94,7 +99,7 @@ async def tend(plugin: meridian.Plugin, feed: Feed, held: list[Config]) -> None:
         await feed.raw.tend(plugin, config.window_days, config.past_window, feed.now())
 
 
-async def licences(plugin: meridian.Plugin, feed: Feed) -> None:
+async def licences(plugin: meridian.Plugin, feed: Feed, estr: EstrFeed) -> None:
     """Its own declared datasets' licences (contract v20, W10.9), read on
     start and every minute, for the Datasets page; and the data role's
     figures, set for the next heartbeat."""
@@ -103,7 +108,7 @@ async def licences(plugin: meridian.Plugin, feed: Feed) -> None:
             await feed.wants.read_licences()
         except meridian.MeridianError as failed:
             log.warning("the datasets' licences were not read this time: %s", failed)
-        plugin.figures = figures(feed.status, feed)
+        plugin.figures = figures(feed.status, feed, estr.status)
         await asyncio.sleep(LICENCES_SECONDS)
 
 
@@ -125,7 +130,8 @@ async def run() -> None:
     async with await meridian.connect(declaration=DECLARATION) as plugin:
         log.info("registered as %s, roles %s", plugin.identity.instance_id, plugin.identity.roles)
         feed = Feed(plugin, portal(False), RawStore())
-        hold(feed)
+        estr = EstrFeed(feed)
+        hold(feed, estr)
         held = [Config()]
         wake = asyncio.Event()
         server = pages.serve(plugin, PORT)
@@ -135,9 +141,9 @@ async def run() -> None:
                 plugin.receive(observations_wanted=feed.on_want, want_withdrawn=feed.on_withdrawn)
             ),
             asyncio.create_task(watch_settings(plugin, feed, held, wake)),
-            asyncio.create_task(check(feed, wake)),
+            asyncio.create_task(check(feed, estr, wake)),
             asyncio.create_task(tend(plugin, feed, held)),
-            asyncio.create_task(licences(plugin, feed)),
+            asyncio.create_task(licences(plugin, feed, estr)),
         ]
         for task in tasks:
             task.add_done_callback(_said)

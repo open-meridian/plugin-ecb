@@ -39,7 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from typing import Any
@@ -50,7 +50,7 @@ from meridian.roles import data
 
 from . import target
 from .convert import First, day_bounds, frankfurt_day, to_prices
-from .declared import ECB_FX, HISTORY
+from .declared import ECB_ESTR, ECB_FX, HISTORY
 from .portal import Fetched, Portal, PortalUnreachable, path_for, utc_now
 from .rates import EUR, NotRates, Rate, Rates, last_modified_ns, parse
 from .raw import RawStore
@@ -64,6 +64,11 @@ MOST_DAYS = 92
 #: How many published-minus-valid times are kept for the Lag figure.
 LAGS = 2000
 PRICE = "meridian.v1.Price"
+
+#: How a dataset's feed answers a want: what it declines, by subject.
+Answer = Callable[
+    [ops.ObservationsWantedEvent, str, list[str], tuple[int, ...]], Awaitable[dict[str, str]]
+]
 
 
 def _ns(moment: datetime) -> int:
@@ -134,8 +139,13 @@ class Feed:
         self.portal = portal
         self.raw = raw
         self.now = now
-        self.wants = data.Wants(plugin, (ECB_FX,), clock_ns=lambda: _ns(self.now()))
+        # One Wants for the plugin's two datasets: their licences read
+        # together, each want heard here and answered by its dataset's feed.
+        self.wants = data.Wants(plugin, (ECB_FX, ECB_ESTR), clock_ns=lambda: _ns(self.now()))
         self.status = Status(mode=portal.mode, started_at=now())
+        #: The other datasets' answers to a want, by key: `ecb_estr`'s, set
+        #: by its feed (estr_feed.py).
+        self.answers: dict[str, Answer] = {}
         self._recorded_digest = ""
         self._modified = ""
 
@@ -254,7 +264,7 @@ class Feed:
             days=days,
         )
         self.raw.save_firsts()
-        counts = self.wants.counts
+        counts = self.wants.sent_to(ECB_FX)
         before = (counts.recorded, counts.restated, counts.unchanged)
         await self.wants.record("prices", list(converted.prices), ECB_FX, want_id)
         return Outcome(
@@ -344,7 +354,11 @@ class Feed:
         kinds: tuple[int, ...],
     ) -> dict[str, str]:
         """One want answered from the portal: its rates recorded against it,
-        and each subject declined, with why."""
+        and each subject declined, with why. A want of another of the
+        plugin's datasets is its feed's to answer."""
+        other = self.answers.get(key)
+        if other is not None:
+            return await other(want, key, subjects, kinds)
         serves = key == ECB_FX and want.data_type in ("", PRICE)
         if not serves or (kinds and ops.PRICE_KIND_CLOSE not in kinds):
             return {s: "not_covered" for s in subjects}

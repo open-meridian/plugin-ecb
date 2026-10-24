@@ -4,16 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ecb"
-version = "0.1.0"
+version = "0.2.0"
 description = "The European Central Bank's euro foreign exchange reference rates, daily, into an Open Meridian deployment's lake"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.11"
 # The SDK and nothing else, pinned exactly: the sidecar this runs beside
-# speaks one version of the contract (v26), and a range would let a rebuild
+# speaks one version of the contract (v27), and a range would let a rebuild
 # pick up another. The Dockerfile's base is the same version. The ECB's
 # portal is read with the standard library: no third-party dependency.
 dependencies = [
-  "open-meridian==0.31.0",
+  "open-meridian==0.32.3",
 ]
 
 [project.urls]

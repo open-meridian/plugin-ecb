@@ -38,9 +38,10 @@ CLI_CONTEXT := $(if $(MERIDIAN_BIN),--build-context cli=$(MERIDIAN_BIN),)
 # commit, when this plugin chooses. `make e2e RUNTIME_IMAGE=...:latest
 # HARNESS_IMAGE=...:latest` tries a newer core; e2e-latest.yaml does that
 # weekly.
-# Core 17a13a2 (merged as 648e25f), contract v26, as published with chart 0.1.308.
-RUNTIME_IMAGE ?= ghcr.io/open-meridian/meridian-runtime:17a13a2@sha256:09a7daf0b48ed40a047749479513079ee23a9624aa4416f2baacf0460f7b47ac
-HARNESS_IMAGE ?= ghcr.io/open-meridian/meridian-harness:17a13a2@sha256:a4b2ed2ed7d26947d1af5c3a00749f5227811b81eddbd48f0c010443fa057d6b
+# Core a5da59a (merged as 6d346b3), contract v27, as published with chart 0.1.310:
+# its harness holds the platform's seeded referential records, the ECB's among them.
+RUNTIME_IMAGE ?= ghcr.io/open-meridian/meridian-runtime:a5da59a@sha256:05694f1ca4d642def4e2572c78a56c3ce3c43d060f4bac2983e19283e98910de
+HARNESS_IMAGE ?= ghcr.io/open-meridian/meridian-harness:a5da59a@sha256:74a1e5f08308e26571141b24548082280fed8519976c08b32cd8a4b34fc8e08c
 # The harness's two plugins: this one, as instance ecb, holding data as
 # pyproject.toml declares; and the reader, a reporting plugin the e2e runs
 # from e2e/reader.py in the same image.
@@ -116,7 +117,7 @@ check:
 
 # The image `meridian plugin upload` builds from this Dockerfile, checked for
 # what a plugin's image must be: it starts as 65532, imports itself, its pages
-# and its recorded answer, and carries nothing of this repository but the
+# and its recorded answers, and carries nothing of this repository but the
 # package.
 image:
 	@if [ -n "$(SDK_REPO)" ]; then \
@@ -129,8 +130,8 @@ image:
 	@[ "$$(docker inspect -f '{{.Config.User}}' $(IMAGE))" = "65532" ] \
 		|| { echo "image FAILED: it does not run as 65532" >&2; exit 1; }
 	@docker run --rm --entrypoint python $(IMAGE) -c \
-		"import meridian, ecb.__main__, ecb.page; from ecb.portal import SyntheticPortal; assert len(SyntheticPortal().rows) == 1624" \
-		|| { echo "image FAILED: it does not import the SDK, itself and its recorded answer" >&2; exit 1; }
+		"import meridian, ecb.__main__, ecb.page; from ecb.portal import ESTR_SERIES, SyntheticPortal; held = SyntheticPortal(); assert len(held.rows) == 1624 and len(held.recordings[ESTR_SERIES].rows) == 885" \
+		|| { echo "image FAILED: it does not import the SDK, itself and its recorded answers" >&2; exit 1; }
 	@[ "$$(docker run --rm --entrypoint sh $(IMAGE) -c 'ls -A /plugin')" = "docs" ] \
 		|| { echo "image FAILED: /plugin holds files beyond docs/; only the installed package and its documentation belong" >&2; exit 1; }
 	@echo "image OK: $(IMAGE) on $(BASE), $$(docker image inspect -f '{{.Size}}' $(IMAGE) | awk '{printf "%.0f MB", $$1/1e6}')"
