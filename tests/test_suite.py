@@ -31,8 +31,11 @@ compounded index. The ECB publishes no curve, so the four curve cases are
 not presented, each with why. Nor are contract v27's
 `records-a-datasets-liveness` (the plugin polls hourly and streams nothing)
 and `queries-the-lake-within-bounds`, about trades from v27 (the plugin
-records none and asks the lake nothing); and `reports-its-feed-delay` waits
-for contract v28 (ruling 518). The cases every suite holds that the SDK
+records none and asks the lake nothing). From contract v28
+`reports-its-feed-delay` is presented (ruling 518): the current rates read
+unasked, each one's age at the edge from its published time; the chains,
+filings, holdings, dividends and ratings cases are about kinds the ECB never
+publishes, and the quality cases about quotes. The cases every suite holds that the SDK
 answers (a replacement, the template catalogue, an event group heard) are
 the SDK's.
 """
@@ -45,6 +48,7 @@ from pathlib import Path
 from typing import Any
 
 from meridian.plugin.v1 import operations_pb2 as ops
+from meridian.roles.data.testing import feed_delay
 from meridian.suites import ANSWERED_BY_SDK, Recorder, run, suite
 
 from ecb.estr_feed import EstrFeed
@@ -66,6 +70,12 @@ NEVER = {
     "outcomes": "the ECB rates currencies: no event contract, so no outcome",
     "disputed outcomes": "the ECB rates currencies: no event contract, so no outcome disputed",
     "streams": "it polls the ECB's portal hourly; it streams nothing",
+    # Contract v28 (ruling 602).
+    "option chains": "the ECB rates currencies and publishes €STR: no option chain",
+    "filings": "the ECB publishes reference rates: no company's filings",
+    "holdings": "the ECB publishes reference rates: no holdings report",
+    "corporate actions": "the ECB publishes reference rates: no declared dividend",
+    "ratings": "the ECB publishes reference rates: no rating",
 }
 #: The rates cases the ECB never presents: it publishes €STR, its averages
 #: and its index, and no curve.
@@ -81,8 +91,6 @@ NOT_PRESENTED = {
     **NO_CURVE,
     # From contract v27 about trades, which the plugin never records.
     "queries-the-lake-within-bounds": "it records no trades",
-    # Ruling 518: the SDK records latency and sends no ReportLatency yet.
-    "reports-its-feed-delay": "core receives ReportLatency from contract v28, ruling 515",
 }
 
 
@@ -213,6 +221,14 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
         ]
         assert current[0] == current[-1]
 
+    async def delayed(recorder: Recorder, latency: Any) -> None:
+        # Contract v28 (ruling 518): the current rates read unasked, each
+        # one's age at the edge recorded from its published time, reported.
+        _resolving(recorder)
+        feed = work(recorder)
+        feed.wants.latency = latency
+        await feed.check()
+
     async def a_calendar_read(recorder: Recorder) -> None:
         # The next rates expected, after the current rates are read.
         _resolving(recorder)
@@ -234,6 +250,7 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
         "a-rate-fixing": estr_read,
         "a-same-day-revision": estr_revised,
         "an-index-level": estr_read,
+        "reports-its-feed-delay": feed_delay(delayed),
     }
 
 
@@ -241,10 +258,10 @@ def test_the_data_suite_passes(tmp_path: Path) -> None:
     report = run("data", producers(tmp_path), not_presented=NOT_PRESENTED, instance_id="ecb")
     assert report.passed, report.failures
     assert sorted(report.not_presented) == sorted(NOT_PRESENTED)
-    # The plugin's own thirteen -- stage 0's ten and the rates slice's three
-    # -- and the cases every suite holds that the SDK answers (contract v24's
+    # The plugin's own fourteen -- stage 0's ten, the rates slice's three
+    # and v28's feed delay -- and the cases every suite holds that the SDK answers (contract v24's
     # two, v26's event group).
-    assert len(report.passed_cases) == 13 + len(ANSWERED_BY_SDK)
+    assert len(report.passed_cases) == 14 + len(ANSWERED_BY_SDK)
     assert report.answered_by_sdk == list(ANSWERED_BY_SDK)
     assert "reads-a-calendar" in report.passed_cases
 

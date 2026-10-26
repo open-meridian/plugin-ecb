@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
+import meridian
 from meridian import Money, ObservationMeta, Price, SourceTime
 from meridian.plugin.v1 import operations_pb2 as ops
 
@@ -116,7 +117,7 @@ def to_prices(
             Price(
                 meta=ObservationMeta(
                     row_key=row_key(rate.currency, rate.day),
-                    subjects=[ops.SubjectRef(entity_id=euro)],
+                    subjects=[meridian.SubjectRef(entity_id=euro)],
                     source=ops.Source(dataset=dataset),
                     valid_from_ns=start,
                     valid_until_ns=end,
