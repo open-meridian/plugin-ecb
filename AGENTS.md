@@ -2,7 +2,7 @@
 
 The European Central Bank's euro foreign exchange reference rates and euro
 short-term rate as an Open Meridian data plugin, in Python on the
-open-meridian SDK (0.32.3, contract v27). It runs beside a sidecar in a
+open-meridian SDK (0.33.1, contract v28). It runs beside a sidecar in a
 Meridian deployment and puts each TARGET business day's reference rates into
 the deployment's lake, each rate the price of the euro's cash instrument in
 the other currency, as the ECB quotes it (`ecb_fx`), and each day's €STR,
@@ -89,8 +89,9 @@ one plugin per publisher's feed).
   on the plugin's own conversion, and passes: a case about a kind of data
   the ECB never states (a bar, a crypto asset, a venue, a security another
   source named, trades, quotes, settlement dates, outcomes, a stream, a
-  curve) is named in `not_presented` with why, and the latency case waits
-  for contract v28 (ruling 518). Never write a producer that invents what
+  curve, and from v28 chains, filings, holdings, dividends, ratings) is
+  named in `not_presented` with why; the feed delay is presented (ruling
+  518). Never write a producer that invents what
   the ECB does not state.
 
 ## Checking it locally

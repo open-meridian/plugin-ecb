@@ -32,7 +32,7 @@ env:
   # from here. 0.1.51 holds the suites of contract v27 (0.1.46 was the first
   # to check docs/: documentation-sections, documentation-safe). Locally `make
   # check MERIDIAN_BIN=...` tries a build of another.
-  MERIDIAN_VERSION: 0.1.51
+  MERIDIAN_VERSION: 0.1.52
 
 jobs:
   check:

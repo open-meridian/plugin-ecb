@@ -10,12 +10,12 @@ instrument in the other currency, as the ECB quotes it; and the
 [euro short-term rate](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html)
 (€STR), its compounded averages and its compounded index, as rates. It
 reads the ECB's Data Portal (SDMX), and holds the `data` role, a data
-plugin. This is release 0.2.0, not released yet. How to set it up and use it is in
+plugin. This is release 0.3.0. How to set it up and use it is in
 [docs/](docs/README.md); how a plugin like it is built is documented at
 [open-meridian.dev](https://open-meridian.dev).
 
-It is built on the SDK it pins, `open-meridian==0.32.3`, which declares
-contract v27. It is stages 0 and 1 of the ECB's data plugin (meridian-design
+It is built on the SDK it pins, `open-meridian==0.33.1`, which declares
+contract v28. It is stages 0 and 1 of the ECB's data plugin (meridian-design
 `spec/a-public-rates-and-filings-data-plugin.md`, §8): the reference rates
 as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
 
@@ -81,9 +81,11 @@ plugin's own conversion, and it passes: stage 0's cases are presented,
 slice's `a-rate-fixing`, `a-same-day-revision` and `an-index-level` on €STR;
 every other case is about a kind of data the ECB never states -- a day's
 open, high, low and volume, a crypto asset, a venue, a security another
-source named, trades, quotes, settlement dates, outcomes, a stream, a curve
--- and is not presented, with why, as the suite lets it; the feed delay
-waits for contract v28 (ruling 518).
+source named, trades, quotes, settlement dates, outcomes, a stream, a curve,
+and from contract v28 option chains, filings, holdings, dividends and
+ratings -- and is not presented, with why, as the suite lets it. Its feed
+delay is presented (ruling 518): each rate's age at the edge from its
+published time, reported.
 
 ## The terms, summarised
 
