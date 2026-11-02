@@ -14,7 +14,7 @@ from meridian.suites import Recorder
 from ecb.convert import day_bounds
 from ecb.portal import Fetched, PortalUnreachable, SyntheticPortal
 
-from conftest import AT, CODES, PUBLISHED_NS, feed, recorder, want
+from conftest import AT, CODES, PUBLISHED_NS, feed, lake_of, recorder, want
 
 EURO = "LCL-EUR"
 #: The current range's days with a rate: 9 October, then 12 to 16 and 19.
@@ -44,7 +44,7 @@ async def test_the_current_rates_pushed_whole(tmp_path: Path) -> None:
     work = feed(tmp_path)
     done = await work.check()
     assert done is not None and done.recorded == CURRENT_DAYS * len(CODES) == 203
-    plugin = work.plugin
+    plugin = lake_of(work)
     assert isinstance(plugin, Recorder)
     [batch] = plugin.on("RecordPrices")
     assert not batch.want_id
@@ -64,7 +64,7 @@ async def test_the_current_rates_pushed_whole(tmp_path: Path) -> None:
 async def test_only_a_rate_read_on_its_day_states_its_published_time(tmp_path: Path) -> None:
     work = feed(tmp_path)
     await work.check()
-    prices = work.plugin.on("RecordPrices")[0].prices
+    prices = lake_of(work).on("RecordPrices")[0].prices
     published = {p.meta.row_key: [t.at_ns for t in p.meta.source_times] for p in prices}
     assert all(published[f"{c}:2026-10-19"] == [PUBLISHED_NS] for c in CODES)
     assert all(not published[f"{c}:2026-10-16"] for c in CODES)
@@ -76,7 +76,7 @@ async def test_rates_unchanged_are_not_asked_again(tmp_path: Path) -> None:
     work = feed(tmp_path)
     await work.check()
     assert await work.check() is None
-    assert len(work.plugin.on("RecordPrices")) == 1
+    assert len(lake_of(work).on("RecordPrices")) == 1
     assert work.status.not_modified == 1 and len(work.raw.keys()) == 1
 
 
@@ -85,7 +85,7 @@ async def test_a_restart_names_the_answer_first_read(tmp_path: Path) -> None:
     await first.check()
     again = feed(tmp_path, recorder(), at=AT + timedelta(hours=1))
     await again.check()
-    batches = [w.plugin.on("RecordPrices")[0].prices for w in (first, again)]
+    batches = [lake_of(w).on("RecordPrices")[0].prices for w in (first, again)]
     named = [
         {p.meta.row_key: (p.meta.raw.key, list(p.meta.source_times)) for p in b} for b in batches
     ]
@@ -99,7 +99,7 @@ async def test_a_corrected_rate_is_the_same_rows_next_version(tmp_path: Path) ->
     work._modified = ""  # read in full again, as after a change
     work._recorded_digest = "x"
     await work.check()
-    first, second = (b.prices for b in work.plugin.on("RecordPrices"))
+    first, second = (b.prices for b in lake_of(work).on("RecordPrices"))
     assert [p.meta.row_key for p in first] == [p.meta.row_key for p in second]
     changed = [
         (a.meta.row_key, a.meta.raw.key != b.meta.raw.key)
@@ -136,8 +136,8 @@ async def test_no_rate_goes_while_the_euro_does_not_resolve(tmp_path: Path) -> N
 async def test_a_past_day_wanted_is_recorded_against_the_want(tmp_path: Path) -> None:
     work = feed(tmp_path)
     await work.check()
-    await work.on_want(want("w-1", [EURO], day="2026-09-25"))
-    batch = work.plugin.on("RecordPrices")[-1]
+    await work.on_observations_wanted(want("w-1", [EURO], day="2026-09-25"))
+    batch = lake_of(work).on("RecordPrices")[-1]
     assert batch.want_id == "w-1" and len(batch.prices) == len(CODES)
     assert {p.meta.business_date for p in batch.prices} == {"2026-09-25"}
     assert {p.meta.subjects[0].entity_id for p in batch.prices} == {EURO}
@@ -153,8 +153,8 @@ async def test_a_range_wanted_is_read_in_one_request(tmp_path: Path) -> None:
     _, end = day_bounds(date(2026, 9, 20))
     portal = work.portal
     assert isinstance(portal, SyntheticPortal)
-    await work.on_want(want("w-r", [EURO], valid_from_ns=start, valid_until_ns=end))
-    batch = work.plugin.on("RecordPrices")[-1]
+    await work.on_observations_wanted(want("w-r", [EURO], valid_from_ns=start, valid_until_ns=end))
+    batch = lake_of(work).on("RecordPrices")[-1]
     assert {p.meta.business_date for p in batch.prices} == {f"2026-09-{d}" for d in range(14, 19)}
     assert portal.asked[-1].endswith("startPeriod=2026-09-14&endPeriod=2026-09-18")
 
@@ -162,11 +162,13 @@ async def test_a_range_wanted_is_read_in_one_request(tmp_path: Path) -> None:
 async def test_another_currency_is_declined_not_covered(tmp_path: Path) -> None:
     work = feed(tmp_path)
     await work.check()
-    await work.on_want(want("w-2", ["LCL-CHF", EURO, "LCL-elsewhere"], day="2026-10-02"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.on_observations_wanted(
+        want("w-2", ["LCL-CHF", EURO, "LCL-elsewhere"], day="2026-10-02")
+    )
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_NOT_COVERED
     assert [s.entity_id for s in declined.subjects] == ["LCL-CHF", "LCL-elsewhere"]
-    batch = work.plugin.on("RecordPrices")[-1]
+    batch = lake_of(work).on("RecordPrices")[-1]
     assert batch.want_id == "w-2" and len(batch.prices) == len(CODES)
 
 
@@ -174,46 +176,50 @@ async def test_a_target_closing_day_is_declined_without_a_request(tmp_path: Path
     work = feed(tmp_path)
     portal = work.portal
     assert isinstance(portal, SyntheticPortal)
-    await work.on_want(want("w-3", [EURO], day="2026-10-17"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.on_observations_wanted(want("w-3", [EURO], day="2026-10-17"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_SOURCE_SILENT
     assert portal.asked == []
-    [read] = work.plugin.on("ReadCalendar")
+    [read] = lake_of(work).on("ReadCalendar")
     assert (read.from_date, read.to_date) == ("2026-10-17", "2026-10-17")
 
 
 async def test_a_day_the_portal_states_nothing_for_is_declined_silent(tmp_path: Path) -> None:
     work = feed(tmp_path)
     # Friday 31 July 2026, before the recording: the portal answers no rate.
-    await work.on_want(want("w-4", [EURO], day="2026-07-31"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.on_observations_wanted(want("w-4", [EURO], day="2026-07-31"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_SOURCE_SILENT
     # A day not come yet is silent too.
-    await work.on_want(want("w-5", [EURO], day="2026-10-21"))
-    assert work.plugin.on("DeclineWant")[-1].reason == ops.UNANSWERED_REASON_SOURCE_SILENT
+    await work.on_observations_wanted(want("w-5", [EURO], day="2026-10-21"))
+    assert lake_of(work).on("DeclineWant")[-1].reason == ops.UNANSWERED_REASON_SOURCE_SILENT
 
 
 async def test_a_day_past_the_history_is_declined(tmp_path: Path) -> None:
     work = feed(tmp_path)
-    await work.on_want(want("w-6", [EURO], day="1990-01-02"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.on_observations_wanted(want("w-6", [EURO], day="1990-01-02"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_BEYOND_HISTORY
 
 
 async def test_a_kind_or_a_type_not_served_is_declined(tmp_path: Path) -> None:
     work = feed(tmp_path)
-    await work.on_want(want("w-7", [EURO], day="2026-10-02", kinds=(ops.PRICE_KIND_NAV,)))
-    await work.on_want(want("w-8", [EURO], day="2026-10-02", data_type="meridian.v1.Bar"))
-    await work.on_want(want("w-9", [EURO], day="2026-10-02", dataset="other:daily"))
-    reasons = [d.reason for d in work.plugin.on("DeclineWant")]
+    await work.on_observations_wanted(
+        want("w-7", [EURO], day="2026-10-02", kinds=(ops.PRICE_KIND_NAV,))
+    )
+    await work.on_observations_wanted(
+        want("w-8", [EURO], day="2026-10-02", data_type="meridian.v1.Bar")
+    )
+    await work.on_observations_wanted(want("w-9", [EURO], day="2026-10-02", dataset="other:daily"))
+    reasons = [d.reason for d in lake_of(work).on("DeclineWant")]
     assert reasons == [ops.UNANSWERED_REASON_NOT_COVERED] * 3
-    assert not work.plugin.on("RecordPrices")
+    assert not lake_of(work).on("RecordPrices")
 
 
 async def test_the_latest_wanted_is_the_latest_day_published(tmp_path: Path) -> None:
     work = feed(tmp_path)
-    await work.on_want(want("w-l", [EURO]))
-    batch = work.plugin.on("RecordPrices")[-1]
+    await work.on_observations_wanted(want("w-l", [EURO]))
+    batch = lake_of(work).on("RecordPrices")[-1]
     assert batch.want_id == "w-l"
     assert {p.meta.business_date for p in batch.prices} == {"2026-10-19"}
 
@@ -221,9 +227,9 @@ async def test_the_latest_wanted_is_the_latest_day_published(tmp_path: Path) -> 
 async def test_a_standing_want_is_kept_until_withdrawn(tmp_path: Path) -> None:
     work = feed(tmp_path)
     await work.check()
-    await work.on_want(want("w-s", [EURO], standing=True))
+    await work.on_observations_wanted(want("w-s", [EURO], standing=True))
     assert "w-s" in work.wants.standing
-    await work.on_withdrawn(
+    await work.on_want_withdrawn(
         Heard(
             row="WantWithdrawn",
             message=ops.WantWithdrawnEvent(want_id="w-s", dataset="ecb:ecb_fx"),
@@ -242,7 +248,7 @@ async def test_the_portal_unreachable_is_said(tmp_path: Path) -> None:
     work = feed(tmp_path, portal=Offline())
     assert await work.check() is None
     assert "ConnectionRefusedError" in work.status.error
-    assert not work.plugin.on("RecordPrices")
+    assert not lake_of(work).on("RecordPrices")
 
 
 async def test_the_next_rates_are_expected_by_targets_calendar(tmp_path: Path) -> None:

@@ -30,6 +30,7 @@ from conftest import (
     ESTR_IDS,
     ESTR_PUBLISHED_NS,
     estr_feed,
+    lake_of,
     recorder,
     target_2026,
 )
@@ -126,7 +127,7 @@ async def test_the_current_range_is_recorded_as_rates(tmp_path: Path) -> None:
     done = await work.check()
     assert done is not None and not done.unresolved
     assert done.recorded == CURRENT_DAYS * len(SERIES)
-    plugin = work.plugin
+    plugin = lake_of(work)
     first = plugin.on("RecordRates")[0]
     assert not first.want_id
     current = [r for r in first.rates if r.meta.business_date >= "2026-10-12"]
@@ -148,7 +149,7 @@ async def test_the_current_range_is_recorded_as_rates(tmp_path: Path) -> None:
 async def test_estr_is_a_fixing_with_its_volume_and_percentiles(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
     await work.check()
-    rows = rows_of(work.plugin)
+    rows = rows_of(lake_of(work))
     [fixing] = [
         r
         for r in rows
@@ -175,7 +176,7 @@ async def test_the_averages_and_the_index(tmp_path: Path) -> None:
     await work.check()
     on_22 = {
         r.meta.subjects[0].entity_id: r
-        for r in rows_of(work.plugin)
+        for r in rows_of(lake_of(work))
         if r.meta.business_date == "2026-10-22"
     }
     month = on_22[ESTR_IDS["ESTR 1-month compounded average"]]
@@ -196,7 +197,7 @@ async def test_the_averages_and_the_index(tmp_path: Path) -> None:
 async def test_only_the_latest_day_states_its_published_time(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
     await work.check()
-    rows = [r for r in rows_of(work.plugin) if r.meta.business_date >= "2026-10-12"]
+    rows = [r for r in rows_of(lake_of(work)) if r.meta.business_date >= "2026-10-12"]
     published = {r.meta.business_date for r in rows if r.meta.source_times}
     assert published == {"2026-10-22"}
     latest = next(r for r in rows if r.meta.source_times)
@@ -214,16 +215,16 @@ async def test_every_row_names_the_answer_kept(tmp_path: Path) -> None:
     assert kept is not None and kept["last_modified"] == "Fri, 23 Oct 2026 07:20:16 GMT"
     # The whole answer kept, the series not converted too.
     assert "EST.B.EU000A2X2A25.VL" in kept["body"]
-    on_22 = [r for r in rows_of(work.plugin) if r.meta.business_date == "2026-10-22"]
+    on_22 = [r for r in rows_of(lake_of(work)) if r.meta.business_date == "2026-10-22"]
     assert {r.meta.raw.key for r in on_22} == set(current)
 
 
 async def test_unchanged_is_not_asked_again(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
     await work.check()
-    sent = len(work.plugin.on("RecordRates"))
+    sent = len(lake_of(work).on("RecordRates"))
     assert await work.check() is None
-    assert len(work.plugin.on("RecordRates")) == sent
+    assert len(lake_of(work).on("RecordRates")) == sent
     assert work.status.not_modified == 1
 
 
@@ -234,7 +235,7 @@ async def test_a_revision_is_the_same_rows_next_version(tmp_path: Path) -> None:
         lake.instruments.hold(
             f"INS-ESTR{n}", ops.Identifier(scheme="symbol", value=series.code, source="ecb")
         )
-    work = EstrFeed(Feed(lake, Revised(), RawStore(tmp_path), now=lambda: ESTR_AT))
+    work = EstrFeed(lake.bind(Feed(Revised(), RawStore(tmp_path), now=lambda: ESTR_AT)))
     await work.check()
     work._modified = ""
     revised = await work.check()
@@ -281,7 +282,7 @@ async def test_the_portal_unreachable_is_said(tmp_path: Path) -> None:
     work = estr_feed(tmp_path, portal=Down(lambda: ESTR_AT))
     assert await work.check() is None
     assert "ConnectionRefusedError" in work.status.error
-    assert not work.plugin.on("RecordRates")
+    assert not lake_of(work).on("RecordRates")
 
 
 async def test_the_next_rate_is_expected_by_targets_calendar(tmp_path: Path) -> None:
@@ -308,11 +309,11 @@ async def test_the_history_is_backfilled_once_a_year_a_request(tmp_path: Path) -
     assert len(asked) == 1 + 8
     assert work.fx.raw.backfilled() == date(2026, 10, 11)
     assert work.status.backfill == "Done through 2026-10-11"
-    backfilled = [r for r in rows_of(work.plugin) if r.meta.business_date < "2026-10-12"]
+    backfilled = [r for r in rows_of(lake_of(work)) if r.meta.business_date < "2026-10-12"]
     # The recording's earlier days: 3 August to 9 October, 50 business days.
     assert len({r.meta.business_date for r in backfilled}) == 50
     assert not any(r.meta.source_times for r in backfilled)
-    assert all(not p.want_id for p in work.plugin.on("RecordRates"))
+    assert all(not p.want_id for p in lake_of(work).on("RecordRates"))
 
 
 async def test_a_restart_does_not_backfill_again(tmp_path: Path) -> None:
@@ -373,48 +374,52 @@ def rate_want(
 
 async def test_a_past_day_wanted_is_recorded_against_the_want(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
-    await work.fx.on_want(rate_want("w-1", [ESTR, INDEX], day="2026-09-25"))
-    [batch] = work.plugin.on("RecordRates")
+    await work.fx.on_observations_wanted(rate_want("w-1", [ESTR, INDEX], day="2026-09-25"))
+    [batch] = lake_of(work).on("RecordRates")
     assert batch.want_id == "w-1"
     assert sorted(r.meta.subjects[0].entity_id for r in batch.rates) == sorted([ESTR, INDEX])
     assert {r.meta.business_date for r in batch.rates} == {"2026-09-25"}
     assert not any(r.meta.source_times for r in batch.rates)
-    assert not work.plugin.on("DeclineWant")
+    assert not lake_of(work).on("DeclineWant")
 
 
 async def test_a_range_wanted_is_read_in_one_request(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
     start, _ = day_bounds(date(2026, 9, 1))
     _, end = day_bounds(date(2026, 9, 30))
-    await work.fx.on_want(rate_want("w-r", [ESTR], valid_from_ns=start, valid_until_ns=end))
+    await work.fx.on_observations_wanted(
+        rate_want("w-r", [ESTR], valid_from_ns=start, valid_until_ns=end)
+    )
     asked = [p for p in work.fx.portal.asked if p.startswith(ESTR_SERIES)]  # type: ignore[attr-defined]
     assert asked == [f"{ESTR_SERIES}?format=csvdata&startPeriod=2026-09-01&endPeriod=2026-09-30"]
-    [batch] = work.plugin.on("RecordRates")
+    [batch] = lake_of(work).on("RecordRates")
     assert len(batch.rates) == 22
 
 
 async def test_other_subjects_and_kinds_are_not_covered(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
-    await work.fx.on_want(rate_want("w-2", [ESTR, "LCL-EUR"], day="2026-09-25"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.fx.on_observations_wanted(rate_want("w-2", [ESTR, "LCL-EUR"], day="2026-09-25"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert [s.entity_id for s in declined.subjects] == ["LCL-EUR"]
     assert declined.reason == ops.UNANSWERED_REASON_NOT_COVERED
-    await work.fx.on_want(rate_want("w-3", [ESTR], day="2026-09-25", data_type="meridian.v1.Price"))
-    assert work.plugin.on("DeclineWant")[-1].reason == ops.UNANSWERED_REASON_NOT_COVERED
+    await work.fx.on_observations_wanted(
+        rate_want("w-3", [ESTR], day="2026-09-25", data_type="meridian.v1.Price")
+    )
+    assert lake_of(work).on("DeclineWant")[-1].reason == ops.UNANSWERED_REASON_NOT_COVERED
 
 
 async def test_a_closing_day_is_silent_without_a_request(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
-    await work.fx.on_want(rate_want("w-4", [ESTR], day="2026-10-17"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.fx.on_observations_wanted(rate_want("w-4", [ESTR], day="2026-10-17"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_SOURCE_SILENT
     assert not [p for p in work.fx.portal.asked if p.startswith(ESTR_SERIES)]  # type: ignore[attr-defined]
 
 
 async def test_before_estr_is_beyond_its_history(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
-    await work.fx.on_want(rate_want("w-5", [ESTR], day="2019-09-30"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.fx.on_observations_wanted(rate_want("w-5", [ESTR], day="2019-09-30"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_BEYOND_HISTORY
     assert date(2019, 10, 1) == ESTR_FROM
 
@@ -422,16 +427,16 @@ async def test_before_estr_is_beyond_its_history(tmp_path: Path) -> None:
 async def test_a_record_that_states_nothing_that_day_is_silent(tmp_path: Path) -> None:
     # The recording holds nothing before August: the portal answers empty.
     work = estr_feed(tmp_path)
-    await work.fx.on_want(rate_want("w-6", [ESTR], day="2026-07-31"))
-    [declined] = work.plugin.on("DeclineWant")
+    await work.fx.on_observations_wanted(rate_want("w-6", [ESTR], day="2026-07-31"))
+    [declined] = lake_of(work).on("DeclineWant")
     assert declined.reason == ops.UNANSWERED_REASON_SOURCE_SILENT
 
 
 async def test_a_standing_want_is_kept_current(tmp_path: Path) -> None:
     work = estr_feed(tmp_path)
-    await work.fx.on_want(rate_want("w-s", [ESTR], standing=True))
+    await work.fx.on_observations_wanted(rate_want("w-s", [ESTR], standing=True))
     assert [w.want_id for w in work.fx.wants.standing_of("ecb_estr")] == ["w-s"]
-    against = [p for p in work.plugin.on("RecordRates") if p.want_id == "w-s"]
+    against = [p for p in lake_of(work).on("RecordRates") if p.want_id == "w-s"]
     assert against and {r.meta.business_date for r in against[0].rates} == {"2026-10-22"}
 
 
@@ -508,8 +513,8 @@ async def test_a_restart_names_the_answer_each_rate_was_first_read_from(tmp_path
     # restart re-reading the range and the history names the first answers.
     first = estr_feed(tmp_path)
     await first.check()
-    raws = {r.meta.row_key: r.meta.raw.key for r in rows_of(first.plugin)}
+    raws = {r.meta.row_key: r.meta.raw.key for r in rows_of(lake_of(first))}
     again = estr_feed(tmp_path, at=ESTR_AT + timedelta(hours=1))
     await again.check()
-    reread = rows_of(again.plugin)
+    reread = rows_of(lake_of(again))
     assert reread and all(raws[r.meta.row_key] == r.meta.raw.key for r in reread)

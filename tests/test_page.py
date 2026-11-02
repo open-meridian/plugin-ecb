@@ -28,8 +28,8 @@ def client(tmp_path: Path) -> PageClient:
     async def run() -> None:
         await work.check()
         await estr.check()
-        await work.on_want(want("w-0925", ["LCL-EUR"], day="2026-09-25"))
-        await work.on_want(want("w-standing", ["LCL-EUR"], standing=True))
+        await work.on_observations_wanted(want("w-0925", ["LCL-EUR"], day="2026-09-25"))
+        await work.on_observations_wanted(want("w-standing", ["LCL-EUR"], standing=True))
 
     asyncio.run(run())
     hold(work, estr)

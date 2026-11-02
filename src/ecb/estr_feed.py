@@ -159,7 +159,7 @@ class EstrFeed:
     def __init__(self, fx: Feed) -> None:
         self.fx = fx
         self.rates = rates.Feed(
-            fx.plugin,
+            fx,
             SOURCE,
             wants=fx.wants,
             day_zone=DAY_TIME_ZONE,
@@ -408,7 +408,7 @@ class EstrFeed:
         published the business day after that."""
         after = self.status.latest_day or self.today() - timedelta(days=1)
         days = await target.read(
-            self.plugin, after, after + timedelta(days=target.AHEAD), _ns(self.now())
+            self.fx, after, after + timedelta(days=target.AHEAD), _ns(self.now())
         )
         self.status.calendar = days
         rate_day = target.next_publication(days, after)
@@ -466,7 +466,7 @@ class EstrFeed:
         asked = [d for d in days if ESTR_FROM <= d <= today]
         if not asked:
             return "source_silent", set()
-        calendar = await target.read(self.plugin, min(asked), max(asked), _ns(self.now()))
+        calendar = await target.read(self.fx, min(asked), max(asked), _ns(self.now()))
         shut = set(target.closed(calendar, asked))
         open_days = [d for d in asked if d not in shut]
         if not open_days:

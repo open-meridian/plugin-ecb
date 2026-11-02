@@ -76,6 +76,9 @@ NEVER = {
     "holdings": "the ECB publishes reference rates: no holdings report",
     "corporate actions": "the ECB publishes reference rates: no declared dividend",
     "ratings": "the ECB publishes reference rates: no rating",
+    # Contract v29 (SDK 0.34.0, 0.35.0).
+    "derived series": "the ECB's rates are recorded as published: no series derived from them",
+    "factors": "the ECB publishes reference rates: no pool, so no pool's factor",
 }
 #: The rates cases the ECB never presents: it publishes €STR, its averages
 #: and its index, and no curve.
@@ -148,7 +151,9 @@ def _resolving(recorder: Recorder, ambiguous: str = "") -> None:
 
 def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
     def work(recorder: Recorder, portal: Any = None) -> Feed:
-        return Feed(recorder, portal or SyntheticPortal(lambda: AT), RawStore(tmp), now=lambda: AT)
+        return recorder.bind(
+            Feed(portal or SyntheticPortal(lambda: AT), RawStore(tmp), now=lambda: AT)
+        )
 
     async def the_rates_read(recorder: Recorder) -> None:
         _resolving(recorder)
@@ -174,7 +179,7 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
             _resolving(recorder)
             feed = work(recorder)
             recorder.answer("ObservationsWanted", lambda _: message)
-            await recorder.receive(observations_wanted=feed.on_want)
+            await recorder.hear(feed)
 
         return produce
 
@@ -195,13 +200,13 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
             "WantWithdrawn",
             lambda _: ops.WantWithdrawnEvent(want_id="w-standing", dataset=DATASET),
         )
-        await recorder.receive(want_withdrawn=feed.on_withdrawn)
+        await recorder.hear(feed)
 
     def estr(recorder: Recorder, portal: Any = None) -> EstrFeed:
-        fx = Feed(
-            recorder, portal or SyntheticPortal(lambda: ESTR_AT), RawStore(tmp),
+        fx = recorder.bind(Feed(
+            portal or SyntheticPortal(lambda: ESTR_AT), RawStore(tmp),
             now=lambda: ESTR_AT,
-        )  # fmt: skip
+        ))  # fmt: skip
         return EstrFeed(fx)
 
     async def estr_read(recorder: Recorder) -> None:
@@ -273,7 +278,7 @@ def test_an_exact_price_never_passes_through_a_float(tmp_path: Path) -> None:
 
     recorder = Recorder("ecb")
     _resolving(recorder)
-    feed = Feed(recorder, SyntheticPortal(lambda: AT), RawStore(tmp_path), now=lambda: AT)
+    feed = recorder.bind(Feed(SyntheticPortal(lambda: AT), RawStore(tmp_path), now=lambda: AT))
     asyncio.run(feed.check())
     amounts = {
         p.meta.row_key: str(as_decimal(p.price.amount))
