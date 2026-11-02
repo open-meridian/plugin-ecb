@@ -28,10 +28,7 @@ from .settings import DECLARED
 PORT = 8000
 
 DECLARATION = Declaration(
-    # The settings as declared, untyped, so `meridian.run` delivers them with
-    # the storage kind's window settings beside them, which a typed delivery
-    # leaves out on open-meridian 0.35.1: drop after SDK 0.35.2.
-    settings=DECLARED.declared(),  # type: ignore[attr-defined]
+    settings=DECLARED,
     storage=Storage(retention_days=MOST_WINDOW_DAYS, kinds=[RESPONSES_KIND]),
     catalogue=[ECB_FX_DATASET, ECB_ESTR_DATASET],
     interface=meridian.Interface(port=PORT, title=TITLE, pages=pages),
