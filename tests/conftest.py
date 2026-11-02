@@ -98,13 +98,25 @@ def recorder(ambiguous: str = "", missing: str = "") -> Recorder:
 
 
 def feed(tmp: Path, plugin: Recorder | None = None, at: datetime = AT, portal: Any = None) -> Feed:
-    """The plugin's work on the suite's recorder and the recorded answer, at `at`."""
-    return Feed(
-        plugin or recorder(),
-        portal or SyntheticPortal(lambda: at),
-        RawStore(tmp),
-        now=lambda: at,
-    )
+    """The plugin's work on the suite's recorder and the recorded answer, at
+    `at`: its data role class bound to the recorder (open-meridian 0.35)."""
+    held = plugin or recorder()
+    work = held.bind(Feed(portal or SyntheticPortal(lambda: at), RawStore(tmp), now=lambda: at))
+    _BOUND[id(work)] = (work, held)
+    return work
+
+
+#: The recorder each feed the tests made is bound to: under open-meridian
+#: 0.35 a role class's `plugin` is the connection's stand-in, which records
+#: no act, so the tests read what was sent from the recorder itself.
+_BOUND: dict[int, tuple[Feed, Recorder]] = {}
+
+
+def lake_of(work: Feed | EstrFeed) -> Recorder:
+    """The recorder `work` -- a feed `feed` made, or €STR's beside one --
+    is bound to."""
+    fx = work.fx if isinstance(work, EstrFeed) else work
+    return _BOUND[id(fx)][1]
 
 
 def estr_feed(

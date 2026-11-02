@@ -118,11 +118,12 @@ def days_of(answer: Any) -> Days:
     return read
 
 
-async def read(plugin: Any, start: date, end: date, as_of_ns: int) -> Days:
-    """TARGET's days from `start` to `end`, as of `as_of_ns`; a refusal said
-    and answered as unread."""
+async def read(role: Any, start: date, end: date, as_of_ns: int) -> Days:
+    """TARGET's days from `start` to `end`, as of `as_of_ns`, read through the
+    data role's class (`role`, open-meridian 0.35); a refusal said and
+    answered as unread."""
     try:
-        answer = await plugin.read_calendar(
+        answer = await role.read_calendar(
             calendar_id=TARGET_CALENDAR, from_date=start, to_date=end, as_of_ns=as_of_ns
         )
     except meridian.MeridianError as refused:

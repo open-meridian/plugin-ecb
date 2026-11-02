@@ -10,12 +10,13 @@ instrument in the other currency, as the ECB quotes it; and the
 [euro short-term rate](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html)
 (€STR), its compounded averages and its compounded index, as rates. It
 reads the ECB's Data Portal (SDMX), and holds the `data` role, a data
-plugin. This is release 0.3.0. How to set it up and use it is in
+plugin. This is release 0.4.0. How to set it up and use it is in
 [docs/](docs/README.md); how a plugin like it is built is documented at
 [open-meridian.dev](https://open-meridian.dev).
 
-It is built on the SDK it pins, `open-meridian==0.33.4`, which declares
-contract v28. It is stages 0 and 1 of the ECB's data plugin (meridian-design
+It is built on the SDK it pins, `open-meridian==0.35.1`, which declares
+contract v29 (its work one class for its role, registered with
+`meridian.run`). It is stages 0 and 1 of the ECB's data plugin (meridian-design
 `spec/a-public-rates-and-filings-data-plugin.md`, §8): the reference rates
 as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
 

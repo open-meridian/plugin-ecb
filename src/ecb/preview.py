@@ -76,7 +76,7 @@ def _feed() -> tuple[Feed, EstrFeed]:
         return ops.ResolveIdentifierResult(found=True, instrument_id=f"INS-{named.value}")
 
     recorder.answer("ResolveIdentifier", resolved)
-    feed = Feed(recorder, SyntheticPortal(lambda: AT), RawStore(), now=lambda: AT)
+    feed = recorder.bind(Feed(SyntheticPortal(lambda: AT), RawStore(), now=lambda: AT))
     return feed, EstrFeed(feed)
 
 
@@ -86,9 +86,9 @@ async def synthetic_feed() -> tuple[Feed, EstrFeed]:
     await feed.check()
     await estr.check()
     euro = feed.euro()
-    await feed.on_want(_want("want-0925", euro, "2026-09-25"))
-    await feed.on_want(_want("want-1017", euro, "2026-10-17"))
-    await feed.on_want(_want("want-standing", euro, standing=True))
+    await feed.on_observations_wanted(_want("want-0925", euro, "2026-09-25"))
+    await feed.on_observations_wanted(_want("want-1017", euro, "2026-10-17"))
+    await feed.on_observations_wanted(_want("want-standing", euro, standing=True))
     rate = ops.ObservationsWantedEvent(
         want_id="want-estr-1001",
         dataset="ecb:ecb_estr",
@@ -96,7 +96,7 @@ async def synthetic_feed() -> tuple[Feed, EstrFeed]:
         subjects=[ops.SubjectRef(entity_id=estr.status.records["ESTR"].instrument_id)],
         business_date="2026-10-01",
     )
-    await feed.on_want(Heard(row="ObservationsWanted", message=rate))
+    await feed.on_observations_wanted(Heard(row="ObservationsWanted", message=rate))
     return feed, estr
 
 

@@ -42,7 +42,6 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
-from typing import Any
 
 import meridian
 from meridian.plugin.v1 import operations_pb2 as ops
@@ -123,29 +122,28 @@ class Status:
     next_release: date | None = None
 
 
-class Feed:
-    """The plugin's work, on its typed operations -- `plugin` is the
-    connected `meridian.Plugin`, or the suite's `Recorder` in its tests --
-    reading the portal, resolving, recording, answering wants."""
+class Feed(data.Role):
+    """The plugin's data role class (open-meridian 0.35: each role one
+    class), its acts made on itself -- registered with `meridian.run`, or
+    bound to the suite's `Recorder` in its tests -- reading the portal,
+    resolving, recording, answering wants."""
 
     def __init__(
         self,
-        plugin: Any,
         portal: Portal,
         raw: RawStore,
         now: Callable[[], datetime] = utc_now,
     ) -> None:
-        self.plugin = plugin
         self.portal = portal
         self.raw = raw
         self.now = now
         # One Wants for the plugin's two datasets: their licences read
         # together, each want heard here and answered by its dataset's feed.
-        self.wants = data.Wants(plugin, (ECB_FX, ECB_ESTR), clock_ns=lambda: _ns(self.now()))
+        self.wants = data.Wants(self, (ECB_FX, ECB_ESTR), clock_ns=lambda: _ns(self.now()))
         # Contract v28 (ruling 518): each row recorded unasked or for a
         # standing want has its age at the edge recorded where it states its
         # published time, reported every 10 seconds (`__main__`).
-        self.latency = Latency(plugin, clock_ns=lambda: _ns(self.now()))
+        self.latency = Latency(self, clock_ns=lambda: _ns(self.now()))
         self.wants.latency = self.latency
         self.status = Status(mode=portal.mode, started_at=now())
         #: The other datasets' answers to a want, by key: `ecb_estr`'s, set
@@ -199,7 +197,7 @@ class Feed:
             identifier = ops.Identifier(scheme="iso4217", value=code)
             # As of now, said: an as-of left out is the epoch, which no
             # identifier window the deployment keeps from a date covers.
-            found = await self.plugin.resolve_identifier(
+            found = await self.resolve_identifier(
                 identifiers=[identifier],
                 as_of_ns=_ns(self.now()),
                 stated_asset_class="cash",
@@ -211,7 +209,7 @@ class Feed:
                 continue
             reason = found.miss_reason or ops.MISS_REASON_NOT_FOUND
             held.miss = ops.MissReason.Name(reason).removeprefix("MISS_REASON_").lower()
-            await self.plugin.report_missing_instrument(
+            await self.report_missing_instrument(
                 source=SOURCE,
                 asset_class="cash",
                 identifiers=[identifier],
@@ -321,20 +319,20 @@ class Feed:
         """The next rates expected, by TARGET's calendar: the first day after
         the latest stated (or yesterday, before any) the ECB publishes on."""
         after = self.status.latest_day or self.today() - timedelta(days=1)
-        days = await target.read(
-            self.plugin, after, after + timedelta(days=target.AHEAD), _ns(self.now())
-        )
+        days = await target.read(self, after, after + timedelta(days=target.AHEAD), _ns(self.now()))
         self.status.calendar = days
         self.status.next_release = target.next_publication(days, after)
 
     # ── Wants ───────────────────────────────────────────────────────────
 
-    async def on_want(self, heard: meridian.Heard[ops.ObservationsWantedEvent]) -> None:
+    async def on_observations_wanted(
+        self, heard: meridian.Heard[ops.ObservationsWantedEvent]
+    ) -> None:
         """Record what the lake wants of the plugin's dataset, or decline it
         (the SDK's `Wants.hear`, answered by `answer`)."""
         await self.wants.hear(heard, self.answer)
 
-    async def on_withdrawn(self, heard: meridian.Heard[ops.WantWithdrawnEvent]) -> None:
+    async def on_want_withdrawn(self, heard: meridian.Heard[ops.WantWithdrawnEvent]) -> None:
         """A standing want withdrawn: no longer kept current."""
         self.wants.withdraw(heard.message.want_id)
         log.info("standing want %s withdrawn", heard.message.want_id)
@@ -392,7 +390,7 @@ class Feed:
         asked = [d for d in days if oldest <= d <= today]
         if not asked:
             return "source_silent"
-        calendar = await target.read(self.plugin, min(asked), max(asked), _ns(self.now()))
+        calendar = await target.read(self, min(asked), max(asked), _ns(self.now()))
         shut = set(target.closed(calendar, asked))
         open_days = [d for d in asked if d not in shut]
         if not open_days:

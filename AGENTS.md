@@ -2,7 +2,7 @@
 
 The European Central Bank's euro foreign exchange reference rates and euro
 short-term rate as an Open Meridian data plugin, in Python on the
-open-meridian SDK (0.33.1, contract v28). It runs beside a sidecar in a
+open-meridian SDK (0.35.1, contract v29). It runs beside a sidecar in a
 Meridian deployment and puts each TARGET business day's reference rates into
 the deployment's lake, each rate the price of the euro's cash instrument in
 the other currency, as the ECB quotes it (`ecb_fx`), and each day's €STR,
@@ -30,7 +30,12 @@ one plugin per publisher's feed).
 - `src/ecb/feed.py` resolves the euro and every currency by `iso4217`
   (W3.1) and reports what does not resolve (W3.2), records in batches of at
   most 500 (W10.4) and answers the lake's wants or declines them per
-  subject (W10.7), through the SDK's `meridian.roles.data.Wants`.
+  subject (W10.7), through the SDK's `meridian.roles.data.Wants`. `Feed`
+  is the data role's class (open-meridian 0.35: each role one class), its
+  acts made on itself; `__main__.py`'s `Lake` adds €STR's work and its
+  lifecycle (`on_settings`, and its loops in `run`) and registers it with
+  `meridian.run`. Its tests bind it to the suite's `Recorder`
+  (`recorder.bind(...)`, `recorder.hear(...)`).
 - `src/ecb/estr.py` reads €STR's SDMX-CSV: the seven series the platform
   seeds a record for (€STR, its five compounded averages, its index), with
   €STR's volume, count and percentiles; `src/ecb/estr_feed.py` records them
