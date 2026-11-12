@@ -473,9 +473,9 @@ def test_the_dataset_is_declared_as_the_spec_has_it() -> None:
     assert declared.data_types[0] == "meridian.v1.Rate"
     assert declared.history == 2_600 and declared.cadence == 86_400
     assert declared.day_time_zone == "Europe/Berlin" and declared.day_end_minute == 0
-    licence = declared.licence_default
-    assert licence is not None and licence.kept and licence.display
-    assert licence.derived_use_terms == "not_restricted" and not licence.personal_use
+    # Contract 30: the ECB's terms in words, no licence; a gap asked again.
+    assert "euro short-term rate" in declared.terms_and_pricing
+    assert declared.gap_recovery == "backfill"
 
 
 async def test_a_record_held_later_is_asked_again_at_the_next_check(tmp_path: Path) -> None:

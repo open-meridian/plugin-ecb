@@ -30,7 +30,6 @@ prices are the reading roles' to show.
 from __future__ import annotations
 
 import statistics
-from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
@@ -56,8 +55,8 @@ DATASETS = "/datasets"
 
 #: The longest search the Datasets tab reads.
 MOST_QUERY = 100
-#: The attribution the ECB's terms ask for, said on the Datasets page; the
-#: licence's attribution fields wait for a core that accepts them.
+#: The attribution the ECB's terms ask for, said on the Datasets page beside
+#: each dataset's terms in words.
 ATTRIBUTION = (
     "Source: European Central Bank. Cite the ECB as the source, reproduce the "
     "rates accurately, and say so where they are changed."
@@ -276,7 +275,7 @@ def datasets_read(status: Status, feed: Feed | None) -> records.DatasetsRead:
         feed.wants if feed is not None else None,
         "Yes: no key needed" if answered else "Not asked yet",
     )
-    served = [replace(s, default_terms="kept, derived use, display; cite the ECB") for s in served]
+    # Each row's terms are the dataset's own words (contract 30, ruling 1032).
     currencies = sorted(status.currencies.values(), key=lambda c: (c.code != EUR, c.code))
     priced = sum(1 for c in currencies if c.code != EUR)
     return records.DatasetsRead(

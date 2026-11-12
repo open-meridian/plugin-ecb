@@ -10,13 +10,14 @@ instrument in the other currency, as the ECB quotes it; and the
 [euro short-term rate](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html)
 (€STR), its compounded averages and its compounded index, as rates. It
 reads the ECB's Data Portal (SDMX), and holds the `data` role, a data
-plugin. This is release 0.4.0. How to set it up and use it is in
+plugin. This is release 0.5.0. How to set it up and use it is in
 [docs/](docs/README.md); how a plugin like it is built is documented at
 [open-meridian.dev](https://open-meridian.dev).
 
-It is built on the SDK it pins, `open-meridian==0.35.2`, which declares
-contract v29 (its work one class for its role, registered with
-`meridian.run`). It is stages 0 and 1 of the ECB's data plugin (meridian-design
+It is built on the SDK it pins, `open-meridian==0.36.0`, which declares
+contract 30 (each dataset's terms in words and how a gap in it is
+recovered; from contract v29 its work one class for its role, registered
+with `meridian.run`). It is stages 0 and 1 of the ECB's data plugin (meridian-design
 `spec/a-public-rates-and-filings-data-plugin.md`, §8): the reference rates
 as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
 
@@ -96,10 +97,12 @@ Not legal advice; read the ECB's own words before relying on them.
   information, reproduced accurately with the ECB cited as the source, a
   change to it stated
   ([copyright and disclaimer](https://www.ecb.europa.eu/home/disclaimer/html/index.en.html)).
-  So the dataset's default licence is kept, with derived use and display,
-  no limit on retention, and not one person's terms (`personal_use` false);
-  the attribution is shown on the Datasets page. A deployment's licence on
-  its Data sources page confirms or replaces it.
+  Each dataset says so in words (contract 30, ruling 1032:
+  `declared.FX_TERMS`, `ESTR_TERMS`), shown on Data sources, and declares no
+  licence; the attribution is shown on the Datasets page. A deployment's
+  licence on its Data sources page is the one enforced; until one is set,
+  the lake keeps the rows and reads every use right restrictively. A gap in
+  either dataset is asked again of the portal (`gap_recovery` `backfill`).
 - **For information purposes only.** The ECB publishes the reference rates
   for information and discourages using them for transactions.
 - **No endorsement.** This project is not affiliated with or endorsed by the
