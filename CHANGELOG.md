@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.5.0
+
+On open-meridian 0.36.0, contract 30, on core aae501d's harness (contract v30,
+chart 0.1.538).
+
+- **The ECB's terms in words** (ruling 1032): `licence_default` is gone from
+  the contract. `meridian plugin migrate --to 0.36.0` wrote the shared
+  licence as words ("Kept by the lake; derived use not restricted; display
+  allowed."), which said what the lake did; each dataset now describes the
+  ECB's terms (`declared.FX_TERMS`, `ESTR_TERMS`): free, no key; free use
+  with the ECB cited as the source, a change stated, buyers of a product
+  including it told it is free; the reference rates for information only;
+  no charge or licence for €STR. The Datasets page draws each dataset's own
+  words in place of its fixed "kept, derived use, display; cite the ECB".
+  The plugin declares no licence: until a deployment admin sets one on Data
+  sources, the lake keeps the rows and reads every use right restrictively.
+- **How a gap is recovered** (W10.14): both datasets `backfill` -- the
+  portal serves every past day. No sessions calendar (reference rates, not a
+  traded session), no `most_shards`.
+- **Pins**: open-meridian 0.36.0 and its base by digest; meridian 0.1.60 in
+  the check workflow; core's runtime and harness at `aae501d`, by digest.
+
 ## 0.4.0
 
 On open-meridian 0.35.2, contract v29 (rulings 1001 to 1005 and 1009 to 1023:

@@ -23,14 +23,14 @@ it, and any past day pulled when the lake wants it:
   day, and the plugin reads that calendar to know when the next rates are
   due (feed.py);
 - no venue: the rates are the ECB's reference rates, no venue's;
-- the licence the ECB's terms suggest: kept, derived use and display, with
-  no limit on retention, and not one person's terms (`personal_use` false).
-  The ECB asks to be cited as the source, and a change to its figures to be
-  said: docs/terms.md and the Datasets page say so. The licence's own
-  attribution fields (SDK 0.32.2) wait for core 0.1.311 or later, which
-  accepts them at registration. A deployment's licence confirms or replaces the
-  default on the Data sources page; the plugin says nothing of whether a
-  deployment meets anyone's terms.
+- its terms and pricing (contract 30, ruling 1032) the ECB's, in plain
+  words (`FX_TERMS`), and no licence declared: free, citing the ECB as the
+  source and saying where a figure is changed, the rates for information
+  only. A deployment's licence, set on the Data sources page, is the one
+  enforced; the plugin says nothing of whether a deployment meets anyone's
+  terms;
+- a gap asked again (`gap_recovery` `backfill`, W10.14): the portal serves
+  every past day.
 
 **`ecb_estr`** (stage 1, the rates slice of contract v27). The euro
 short-term rate, its compounded averages and its compounded index (estr.py),
@@ -48,8 +48,8 @@ backfilled once, and any past day pulled when the lake wants it:
 - its day Frankfurt's, ending at midnight, and its calendar TARGET's: the
   ECB computes €STR for each TARGET business day and publishes it at 08:00
   CET the next one;
-- the licence its terms suggest, `ecb_fx`'s: kept, derived use and
-  display, citing the ECB on the Datasets page and in docs/terms.md.
+- its terms the ECB's, in plain words (`ESTR_TERMS`), and a gap asked
+  again (`backfill`), as `ecb_fx`'s.
 
 **Storage:** the portal's answers (raw.py), archivable, ten years by default.
 """
@@ -58,7 +58,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from meridian import DatasetDeclaration, DatasetLicence
+from meridian import DatasetDeclaration
 from meridian.declaration import RecordKind
 
 from .convert import DAY_END_MINUTE, DAY_TIME_ZONE
@@ -71,14 +71,21 @@ VENDOR = "European Central Bank"
 CADENCE = 86_400
 #: The series since 4 January 1999, in days, as the spec's catalogue states it.
 HISTORY = 10_100
-#: Each dataset's default licence, from the ECB's terms (FDP §7): kept, with
-#: derived use and display, no limit on retention, not one person's. The
-#: attribution the ECB asks for is said on the Datasets page and in
-#: docs/terms.md: SDK 0.32.2's attribution fields wait for core 0.1.311 or
-#: later, which accepts them at registration (the licence hold, 2026-10-24).
-ECB_LICENCE = DatasetLicence(
-    kept=True, derived_use=True, derived_use_terms="not_restricted", display=True
+#: The ECB's terms, in plain words (contract 30, ruling 1032): its website's
+#: copyright notice and the reference rates' own page, as docs/terms.md
+#: summarises them.
+ECB_TERMS = (
+    "The ECB's public Data Portal: free, no key or account. The ECB allows free use of "
+    "information from its website provided it is reproduced accurately and the ECB is cited "
+    "as the source; a modification must be stated, and buyers of anything sold that "
+    "includes it told that it is free from the ECB."
 )
+FX_TERMS = ECB_TERMS + (
+    " The euro foreign exchange reference rates are published for information only: the ECB "
+    "discourages their use for transactions and accepts no liability for decisions made in "
+    "reliance on them."
+)
+ESTR_TERMS = ECB_TERMS + " The ECB does not charge for the euro short-term rate or license its use."
 #: The platform's "Euro (TARGET)" currency calendar, read from the platform
 #: on 2026-10-19: TARGET's closing days, which the ECB's Governing Council
 #: set, on which it publishes no reference rate.
@@ -91,7 +98,8 @@ ECB_FX_DATASET = DatasetDeclaration(
     modes=["push", "pull"],
     cadence=CADENCE,
     history=HISTORY,
-    licence_default=ECB_LICENCE,
+    terms_and_pricing=FX_TERMS,
+    gap_recovery="backfill",
     day_time_zone=DAY_TIME_ZONE,
     day_end_minute=DAY_END_MINUTE,
     calendar_id=TARGET_CALENDAR,
@@ -117,7 +125,8 @@ ECB_ESTR_DATASET = DatasetDeclaration(
     modes=["push", "pull"],
     cadence=CADENCE,
     history=ESTR_HISTORY,
-    licence_default=ECB_LICENCE,
+    terms_and_pricing=ESTR_TERMS,
+    gap_recovery="backfill",
     day_time_zone=DAY_TIME_ZONE,
     day_end_minute=DAY_END_MINUTE,
     calendar_id=TARGET_CALENDAR,

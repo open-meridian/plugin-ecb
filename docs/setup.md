@@ -24,11 +24,11 @@ On the deployment's **Data sources** page (deployment admins), for each of
 `<instance>:ecb_fx` (the reference rates, as prices) and
 `<instance>:ecb_estr` (€STR, as rates):
 
-1. **License it.** The catalogue's default is kept, with derived use and
-   display, no limit on retention, and not one person's terms. The ECB asks
-   to be cited as the source, and changes to its figures to be said; record
-   that in your licence's attribution or note. Confirm the default, or set
-   your own, with a note saying why.
+1. **License it.** Each dataset describes the ECB's terms in words and
+   declares no licence: free use, the ECB cited as the source, and changes
+   to its figures said; record that in your licence's attribution or note.
+   Set the licence, with a note saying why; until one is set, the lake keeps
+   the rows and reads every use right restrictively.
 2. **Entitle** each plugin that reads it, such as your reporting plugin, or
    a signal or pricing plugin reading €STR.
 3. **Priority**, where another dataset also states the same values: put the

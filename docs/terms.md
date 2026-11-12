@@ -29,10 +29,10 @@ which can change. Not legal advice.
 ## Attribution
 
 Show "Source: European Central Bank" wherever the rates or €STR are shown or
-passed on, and say so where they are changed. Each dataset's default licence
-declares its values kept, with derived use and display; the attribution
-itself is shown on the Datasets page, and belongs in your licence's
-attribution (or its note).
+passed on, and say so where they are changed. Each dataset describes the
+ECB's terms in words on the Data sources page and declares no licence; the
+attribution itself is shown on the Datasets page, and belongs in your
+licence's attribution (or its note).
 
 The dataset's licence on your Data sources page is what your deployment
 records; neither the plugin nor this page says whether your use meets

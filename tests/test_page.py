@@ -74,13 +74,15 @@ def test_datasets_lists_the_dataset_and_every_currency(client: PageClient) -> No
     text = client.get(DATASETS, "admin").text
     assert text.index("<h2>Served</h2>") < text.index("<h2>Wants</h2>")
     assert text.index('<th class="wide-only">Lag</th>') < text.index("<h2>Records</h2>")
-    assert "ecb:ecb_fx" in text and "ecb:ecb_estr" in text and "cite the ECB" in text
+    assert "ecb:ecb_fx" in text and "ecb:ecb_estr" in text
+    # Each dataset's terms in words (contract 30, ruling 1032).
+    assert "cited as the source" in text and "for information only" in text
     assert "Not licensed yet" in text
     assert text.count("<tr data-code=") == RECORDS
     assert "<om-pager>" in text and "Kept current" in text
     assert "15 h 56 m median" in text and "33 h 20 m median" in text
     assert "fixings in ecb_estr" in text and "index levels in ecb_estr" in text
-    assert "Source: European Central Bank" in text and "cite the ECB" in text
+    assert "Source: European Central Bank" in text and "cited as the source" in text
 
 
 def test_the_tools_answer_what_the_pages_show(client: PageClient) -> None:
