@@ -1,3 +1,4 @@
+miss|ecb|2
 row|ecb:ecb_estr|rate|100|EST.B.EU000A2QQF16.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000013|1|ESTR 1-week compounded average|2||2026-08-10|93|false
 row|ecb:ecb_estr|rate|101|EST.B.EU000A2QQF24.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000014|1|ESTR 1-month compounded average|2||2026-08-10|94|false
 row|ecb:ecb_estr|rate|102|EST.B.EU000A2QQF32.CR:average:-:act_360:simple:2026-08-10@INS-01JREF00000000000000000015|1|ESTR 3-month compounded average|2||2026-08-10|95|false

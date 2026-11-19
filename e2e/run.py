@@ -45,9 +45,11 @@ The yield curves (`ecb_yc`, 0.6.0), beside them: sample data's curves read
 to 17 November 2026; core listing `ecb:ecb_yc` as declared; each of the two
 curves asked of the deployment by its symbol at the ECB and, since the
 platform seeds no record for either yet, reported missing and never minted,
-its rates waiting: the lake holds none of them (so e2e/expected.lake is
-unchanged); licensed and entitled beside the others. The Connection page's
-Sources and the Datasets page's Records are tabs of their own (0.6.0).
+its rates waiting: the lake holds none of their rates, only the two misses
+the instance reported (e2e/expected.lake's `miss|ecb|2`; a new container
+reports them once more, step 8); licensed and entitled beside the others.
+The Connection page's Sources and the Datasets page's Records are tabs of
+their own (0.6.0).
 """
 
 import json
@@ -320,9 +322,15 @@ def run():
     runner("ready")
     until(120, lambda: "Mon 19 Oct" in page("ecb", "admin", "/?tab=sources"),
           "step 8, the new container did not read the rates again")
+    # Its yield curves read too: a new process asks for the two curves again
+    # and, still held by no record, reports each missing once more.
+    until(120, lambda: (lambda s: s if s.get("last_release") == "2026-11-17" else None)(
+        next((s for s in call(read_connection)["sources"] if s["dataset"] == CURVES), {})),
+        "step 8, the new container did not read the yield curves again")
     time.sleep(5)
     again = named(store_lake(), codes)
-    must(again == got, "step 8, the new container recorded something twice:\n"
+    must(again == got.replace("miss|ecb|2\n", "miss|ecb|4\n"),
+         "step 8, the new container recorded something twice:\n"
          + subprocess.run(["diff", "-u", "-", ".e2e/lake"], input=again, capture_output=True, text=True).stdout[-2000:])
     logs = compose("logs", "--no-color", "ecb").stdout
     must("0 recorded, 0 restated, 203 unchanged" in logs,
