@@ -13,6 +13,12 @@ as SDMX-CSV:
   (the EST dataflow; each business day; €STR with its volume, transactions,
   banks and percentiles, its compounded averages and its compounded index),
   kept whole in storage, converted as estr.py says.
+- the euro area yield curves' spot rates and par yields at the tenors
+  carried -- `/service/data/YC/B.U2.EUR.4F.G_N_A+G_N_C.SV_C_YM.SR_3M+...
+  +PY_30Y?format=csvdata&startPeriod=<day>&endPeriod=<day>` (the YC
+  dataflow; each business day; the AAA and all-ratings curves; Svensson,
+  continuously compounded; each tenor's spot rate and par yield), kept whole
+  in storage, converted as curve.py says.
 
 A range with no value, a weekend or a TARGET closing day, is answered 200
 with an empty body.
@@ -21,8 +27,9 @@ The current rates are a range ending today, read hourly. That request says
 `If-Modified-Since` with the Last-Modified the portal last stated, and the
 portal answers 304 when nothing changed, so an hour with nothing new costs
 one empty answer. The ECB updates the rates at around 16:00 CET on each
-TARGET business day (its reference rates page), and €STR at 08:00 CET (a
-revision by 09:00); its Last-Modified is then when it did.
+TARGET business day (its reference rates page), €STR at 08:00 CET (a
+revision by 09:00), and the yield curves at noon CET (their page); its
+Last-Modified is then when it did.
 
 Read from the ECB itself: no key, no account, and its terms are its
 website's (docs/terms.md). It states no rate limit for the portal; the
@@ -33,8 +40,9 @@ needs nothing more.
 
 `SyntheticPortal` answers from the real responses committed under
 responses/ (responses/index.json): every reference rate from 3 August to 19
-October 2026, recorded on 2026-10-19, and every €STR series from 3 August to
-22 October 2026, recorded on 2026-10-23. A request for a range is answered
+October 2026, recorded on 2026-10-19, every €STR series from 3 August to
+22 October 2026, recorded on 2026-10-23, and the yield curves' points
+carried from 3 August to 17 November 2026, recorded on 2026-11-19. A request for a range is answered
 with the recorded rows in it, under its recording's Last-Modified, and each
 current range ends on its recording's last day whatever the clock says, so
 the plugin's tests and its e2e run on it, offline, the same on any day.
@@ -54,16 +62,27 @@ from datetime import UTC, date, datetime, timedelta
 from importlib import resources
 from typing import Any, Protocol
 
+from .curve import CURVES, KINDS, MODEL, TENORS
+
 BASE = "https://data-api.ecb.europa.eu"
 SERIES = "/service/data/EXR/D..EUR.SP00.A"
 #: Every series of the euro short-term rate.
 ESTR_SERIES = "/service/data/EST/B.."
+#: The yield curves' spot rates and par yields at the tenors carried, both
+#: curves (curve.py).
+YC_SERIES = (
+    "/service/data/YC/B.U2.EUR.4F."
+    + "+".join(c.instrument for c in CURVES)
+    + f".{MODEL}."
+    + "+".join(f"{prefix}_{tenor}" for prefix in KINDS for tenor in TENORS)
+)
 USER_AGENT = "meridian-ecb (+https://github.com/open-meridian/plugin-ecb)"
 #: The least time between two requests to the portal, in seconds.
 SPACING = 2.0
 #: How long one request may take.
 TIMEOUT = 60.0
-#: The most of an answer read: a quarter of every currency is under 1 MB.
+#: The most of an answer read: a quarter of every currency is under 1 MB, of
+#: the yield curves' points carried about 5 MB.
 MOST_BYTES = 16 * 1024 * 1024
 #: How many days the current range reaches back: a correction to a rate of
 #: the last week or so is read as the same row's next version.
@@ -206,6 +225,7 @@ class SyntheticPortal:
         self.recordings = {
             SERIES: _recording(held, index["response"]),
             ESTR_SERIES: _recording(held, index["estr"]),
+            YC_SERIES: _recording(held, index["yc"]),
         }
         fx = self.recordings[SERIES]
         self.header, self.rows = fx.header, list(fx.rows)

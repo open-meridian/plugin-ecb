@@ -6,18 +6,21 @@ for looking at them without a deployment.
 
 The plugin's work runs on the SDK's suite recorder in place of a sidecar --
 every currency resolved to an instrument the recorder names, each €STR
-record to one the platform seeded, every batch recorded -- against the
-answers committed under responses/, at 16:30 UTC on 19 October 2026: the
-current rates and €STR read, €STR's history backfilled from the recording,
-a want for 25 September answered, one for Saturday 17 October declined (the
+record to one the platform seeded, the AAA yield curve to a record and the
+all-ratings curve to none (so its "not held" state shows), every batch
+recorded -- against the answers committed under responses/, at 16:30 UTC on
+19 October 2026: the current rates, €STR and the yield curves read,
+€STR's history backfilled from the recording, a want for 25 September
+answered, one for Saturday 17 October declined (the
 ECB publishes nothing on a weekend), a standing want kept current, and a
 want of €STR for 1 October answered. Each page links the kit where
 the dashboard serves it, /.meridian/ui/<version>/: served beside the kit it
 is styled (meridian-ui's `make serve`, or `make preview SHOTS=...`, which
 checks each in a browser); opened on its own it is the page without the kit,
-unstyled, which works too. `connection-first` and `datasets-first` are the
-pages before the first check, with no want yet: the role's "not set up yet"
-states.
+unstyled, which works too. `connection-sources` and `datasets-records` are
+each page's second tab (0.6.0). `connection-first` and `datasets-first` are
+the pages before the first check, with no want yet: the role's "not set up
+yet" states.
 """
 
 from __future__ import annotations
@@ -31,6 +34,8 @@ from meridian.receive import Heard
 from meridian.suites import Recorder
 from meridian.testing import PageClient
 
+from .curve import CURVES
+from .curve_feed import CurveFeed
 from .estr import SERIES
 from .estr_feed import EstrFeed
 from .feed import Feed
@@ -41,11 +46,15 @@ from .raw import RawStore
 AT = datetime(2026, 10, 19, 16, 30, tzinfo=UTC)
 PAGES = {
     "connection": CONNECTION,
+    "connection-sources": CONNECTION,
     "datasets": DATASETS,
+    "datasets-records": DATASETS,
     "datasets-search": DATASETS,
     "connection-first": CONNECTION,
     "datasets-first": DATASETS,
 }
+#: Each page's tab, where it is not the first.
+TABS = {"connection-sources": "sources", "datasets-records": "records"}
 #: What the Datasets tab's search is shown with, as `datasets-search`.
 SEARCHED = "krona"
 
@@ -65,26 +74,30 @@ def _want(want_id: str, subject: str, day: str = "", standing: bool = False) -> 
     )
 
 
-def _feed() -> tuple[Feed, EstrFeed]:
+def _feed() -> tuple[Feed, EstrFeed, CurveFeed]:
     recorder = Recorder("ecb")
     seeded = {s.code: f"INS-{s.isin}" for s in SERIES}
+    seeded[CURVES[0].code] = "INS-01KCURVEAAA0000000000000"
 
     def resolved(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
         named = params.identifiers[0]
+        if named.source == "ecb" and named.value not in seeded:
+            return ops.ResolveIdentifierResult(found=False, miss_reason=ops.MISS_REASON_NOT_FOUND)
         if named.source == "ecb":
             return ops.ResolveIdentifierResult(found=True, instrument_id=seeded[named.value])
         return ops.ResolveIdentifierResult(found=True, instrument_id=f"INS-{named.value}")
 
     recorder.answer("ResolveIdentifier", resolved)
     feed = recorder.bind(Feed(SyntheticPortal(lambda: AT), RawStore(), now=lambda: AT))
-    return feed, EstrFeed(feed)
+    return feed, EstrFeed(feed), CurveFeed(feed)
 
 
-async def synthetic_feed() -> tuple[Feed, EstrFeed]:
+async def synthetic_feed() -> tuple[Feed, EstrFeed, CurveFeed]:
     """The feeds as sample data leaves them, on the recorder."""
-    feed, estr = _feed()
+    feed, estr, curve = _feed()
     await feed.check()
     await estr.check()
+    await curve.check()
     euro = feed.euro()
     await feed.on_observations_wanted(_want("want-0925", euro, "2026-09-25"))
     await feed.on_observations_wanted(_want("want-1017", euro, "2026-10-17"))
@@ -97,13 +110,15 @@ async def synthetic_feed() -> tuple[Feed, EstrFeed]:
         business_date="2026-10-01",
     )
     await feed.on_observations_wanted(Heard(row="ObservationsWanted", message=rate))
-    return feed, estr
+    return feed, estr, curve
 
 
 def render(page: str) -> str:
-    feed, estr = _feed() if page.endswith("-first") else asyncio.run(synthetic_feed())
-    hold(feed, estr)
+    feed, estr, curve = _feed() if page.endswith("-first") else asyncio.run(synthetic_feed())
+    hold(feed, estr, curve)
     query = {"q": SEARCHED} if page == "datasets-search" else {}
+    if page in TABS:
+        query = {"tab": TABS[page]}
     answer = PageClient(pages).get(PAGES[page], "admin", **query)
     if answer.status != 200:
         raise SystemExit(f"{page} answered {answer.status}: {answer.text[:200]}")

@@ -131,7 +131,7 @@ image:
 	@[ "$$(docker inspect -f '{{.Config.User}}' $(IMAGE))" = "65532" ] \
 		|| { echo "image FAILED: it does not run as 65532" >&2; exit 1; }
 	@docker run --rm --entrypoint python $(IMAGE) -c \
-		"import meridian, ecb.__main__, ecb.page; from ecb.portal import ESTR_SERIES, SyntheticPortal; held = SyntheticPortal(); assert len(held.rows) == 1624 and len(held.recordings[ESTR_SERIES].rows) == 885" \
+		"import meridian, ecb.__main__, ecb.page; from ecb.portal import ESTR_SERIES, YC_SERIES, SyntheticPortal; held = SyntheticPortal(); assert len(held.rows) == 1624 and len(held.recordings[ESTR_SERIES].rows) == 885 and len(held.recordings[YC_SERIES].rows) == 10164" \
 		|| { echo "image FAILED: it does not import the SDK, itself and its recorded answers" >&2; exit 1; }
 	@[ "$$(docker run --rm --entrypoint sh $(IMAGE) -c 'ls -A /plugin')" = "docs" ] \
 		|| { echo "image FAILED: /plugin holds files beyond docs/; only the installed package and its documentation belong" >&2; exit 1; }
@@ -173,10 +173,10 @@ preview:
 	@$(DOCKER) build $(SDK_CONTEXT) -f Dockerfile.check --target test -t $(CHECK) . >/dev/null 2>&1 \
 		|| { echo "preview FAILED to build" >&2; exit 1; }
 	@mkdir -p preview
-	@for page in connection datasets datasets-search connection-first datasets-first; do \
+	@for page in connection connection-sources datasets datasets-records datasets-search connection-first datasets-first; do \
 		docker run --rm $(CHECK) python -m ecb.preview $$page >preview/$$page.html || exit 1; \
 	done
-	@echo "preview: preview/connection.html, preview/datasets.html, preview/datasets-search.html, and the -first pages"
+	@echo "preview: preview/connection.html, preview/datasets.html, their second tabs (-sources, -records), preview/datasets-search.html, and the -first pages"
 	@if [ -n "$(SHOTS)" ]; then \
 		[ -d "$(KIT_DIST)" ] || { echo "preview FAILED: no kit at $(KIT_DIST); set KIT_DIST to a meridian-ui checkout's dist/" >&2; exit 1; }; \
 		mkdir -p "$(SHOTS)"; \

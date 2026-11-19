@@ -5,8 +5,10 @@ short-term rate as an Open Meridian data plugin, in Python on the
 open-meridian SDK (0.35.2, contract v29). It runs beside a sidecar in a
 Meridian deployment and puts each TARGET business day's reference rates into
 the deployment's lake, each rate the price of the euro's cash instrument in
-the other currency, as the ECB quotes it (`ecb_fx`), and each day's €STR,
-its compounded averages and its compounded index as rates (`ecb_estr`). What
+the other currency, as the ECB quotes it (`ecb_fx`), each day's €STR,
+its compounded averages and its compounded index as rates (`ecb_estr`), and
+each day's euro area yield curves, their spot rates and par yields as rates
+(`ecb_yc`, from 0.6.0). What
 it may publish and subscribe to comes from its one role, `data`, declared in
 `pyproject.toml`, once a deployment admin approves it. It is stages 0 and 1
 of the ECB's data plugin: meridian-design's
@@ -43,6 +45,14 @@ one plugin per publisher's feed).
   record by its seed's symbol at `ecb`, building the rows, recording them
   through the same `Wants`), backfills the history once, and answers
   `ecb_estr`'s wants, which `feed.py` hands it (`Feed.answers`).
+- `src/ecb/curve.py` reads the yield curves' SDMX-CSV (the `YC` dataflow):
+  the AAA and all-ratings curves' spot rates and par yields at the tenors
+  carried (3M, 6M, 9M, 1Y to 30Y), never their forwards or Svensson
+  parameters (items 130, 131); `src/ecb/curve_feed.py` records them as
+  `Rate`s, `zero` and `par_yield`, continuously compounded, against each
+  curve's record (resolved by the ECB's key for it as a symbol at `ecb`,
+  never minted), and answers `ecb_yc`'s wants. It backfills nothing
+  unasked.
 - `src/ecb/target.py` reads the datasets' calendar, TARGET's closing days
   (`ReadCalendar`), for the next rates expected and the days asked that the
   ECB publishes nothing on.
@@ -77,10 +87,12 @@ one plugin per publisher's feed).
 - **Every row names its raw record,** kept before anything is read from it,
   and the same rate always names the answer it was first read from.
 - **A published time only where known:** the portal's Last-Modified, for a
-  reference rate first read on its own day, and for €STR's latest day in a
-  current read, published within five days after it; none otherwise.
+  reference rate first read on its own day, and for €STR's or a curve's
+  latest day in a current read, published within five days after it; none
+  otherwise.
 - **Rates are rates.** €STR and its averages are percent `UnitValue`s with
-  their convention, the index an index level with its base, through the
+  their convention, the index an index level with its base, a curve's
+  points percent rates with their tenor, through the
   SDK's rates helpers; never a `Price`, never a `Money` but the volume. A
   revision is the same row key's next version: never put the published time
   in a row key.

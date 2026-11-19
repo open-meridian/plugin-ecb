@@ -16,6 +16,7 @@
 | **N currencies not resolved** | A currency's ISO 4217 code found no cash instrument, or two | Complete or merge the instrument at the Instruments page; the next check records its rates |
 | No rate at all, **EUR** not resolved | The euro's own cash instrument is missing: every rate is its price | Complete the euro's instrument at the Instruments page |
 | **N €STR records not resolved** | The deployment holds no record for one of €STR's seven, and could not pull it from the platform | Check the deployment reaches the platform; the next check asks again, and records its rates and the history then |
+| **N yield curves not resolved** | The deployment holds no record for an ECB yield curve: the platform does not seed them yet | Nothing the plugin can do: it never makes a record. Its rates are recorded once the deployment holds the curve's record |
 | A rate the plugin could not read | The portal stated a value that is not a number | It is not recorded; the Datasets page lists it |
 
 ## Wants and licences
@@ -24,5 +25,5 @@
 |---|---|---|
 | A day declined, *source silent* | A weekend, a TARGET closing day, or a day not published yet | Wait for the next TARGET business day's rates, around 16:00 CET, or €STR at 08:00 CET the business day after |
 | A day declined, *beyond history* | €STR asked for before 1 October 2019, or a reference rate before 1999 | Nothing: the ECB published none |
-| A subject declined, *not covered* | The ECB prices only the euro: a rate in francs is the price of the euro; and `ecb_estr` holds only €STR's seven records | Read the euro's price in that currency, and invert it in the reader |
+| A subject declined, *not covered* | The ECB prices only the euro: a rate in francs is the price of the euro; `ecb_estr` holds only €STR's seven records, and `ecb_yc` only the two curves | Read the euro's price in that currency, and invert it in the reader |
 | Datasets: **Not licensed yet** | No deployment admin has licensed the dataset | Ask a deployment admin to license it on Data sources; the page says so within a minute |

@@ -8,9 +8,11 @@ into a deployment's lake, each TARGET business day's rate for about thirty
 currencies against the euro, each rate the price of the euro's cash
 instrument in the other currency, as the ECB quotes it; and the
 [euro short-term rate](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html)
-(€STR), its compounded averages and its compounded index, as rates. It
+(€STR), its compounded averages and its compounded index, as rates; and the
+[euro area yield curves](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_area_yield_curves/html/index.en.html),
+AAA and all ratings, their spot rates and par yields, as rates. It
 reads the ECB's Data Portal (SDMX), and holds the `data` role, a data
-plugin. This is release 0.5.0. How to set it up and use it is in
+plugin. This is release 0.6.0. How to set it up and use it is in
 [docs/](docs/README.md); how a plugin like it is built is documented at
 [open-meridian.dev](https://open-meridian.dev).
 
@@ -19,7 +21,9 @@ contract 30 (each dataset's terms in words and how a gap in it is
 recovered; from contract v29 its work one class for its role, registered
 with `meridian.run`). It is stages 0 and 1 of the ECB's data plugin (meridian-design
 `spec/a-public-rates-and-filings-data-plugin.md`, §8): the reference rates
-as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
+as prices (stage 0), and €STR on contract v27's rates slice (stage 1); and
+the euro area yield curves beside them (the product owner, item 128,
+2026-11-19).
 
 ## What it records
 
@@ -48,6 +52,19 @@ as prices (stage 0), and €STR on contract v27's rates slice (stage 1).
   simple; the index an index level, based 1 October 2019 = 100, with
   €STR's own convention. A revision
   is the same row's next version, with its later published time.
+- **A third dataset, `<instance>:ecb_yc`** (its key proposed with 0.6.0):
+  rates, pushed when the ECB publishes each day's curves at noon CET the next
+  TARGET business day, any past day from 6 September 2004 pulled when the
+  lake wants it; Frankfurt's day; TARGET's calendar. Each of the two curves
+  -- `YC.B.U2.EUR.4F.G_N_A.SV_C_YM`, AAA-rated euro area government bonds,
+  and `…G_N_C…`, all ratings -- is one record, resolved by the ECB's key
+  for it as a symbol at the ECB, and its points rows: its spot rate a
+  `zero` rate and its par yield a `par_yield`, at 3, 6 and 9 months and
+  every whole year to 30, in per cent, continuously compounded as the ECB
+  states them (the SDK's `rates.CONTINUOUS`). Its forwards and Svensson
+  parameters are not recorded. The platform seeds no record for either
+  curve yet: until a deployment holds them, each is reported missing, never
+  minted, and its rates wait.
 - **Every currency resolved** to the deployment's cash instrument by its
   ISO 4217 code, as of the moment it is asked, a miss reported with why.
   The plugin mints no currency: core answers a code the deployment does not
@@ -80,10 +97,12 @@ container recording nothing twice and reading its licence on start.
 **The data suite.** `tests/test_suite.py` runs the SDK's suite on the
 plugin's own conversion, and it passes: stage 0's cases are presented,
 `reads-a-calendar` and its datasets' licences among them, and the rates
-slice's `a-rate-fixing`, `a-same-day-revision` and `an-index-level` on €STR;
+slice's `a-rate-fixing`, `a-same-day-revision` and `an-index-level` on €STR,
+and `a-curve-for-a-date` and `a-tenor-not-published` on the yield curves;
 every other case is about a kind of data the ECB never states -- a day's
 open, high, low and volume, a crypto asset, a venue, a security another
-source named, trades, quotes, settlement dates, outcomes, a stream, a curve,
+source named, trades, quotes, settlement dates, outcomes, a stream, a bill's
+two conventions, another source's curve point,
 and from contract v28 option chains, filings, holdings, dividends and
 ratings -- and is not presented, with why, as the suite lets it. Its feed
 delay is presented (ruling 518): each rate's age at the edge from its
@@ -98,18 +117,23 @@ Not legal advice; read the ECB's own words before relying on them.
   change to it stated
   ([copyright and disclaimer](https://www.ecb.europa.eu/home/disclaimer/html/index.en.html)).
   Each dataset says so in words (contract 30, ruling 1032:
-  `declared.FX_TERMS`, `ESTR_TERMS`), shown on Data sources, and declares no
+  `declared.FX_TERMS`, `ESTR_TERMS`, `YC_TERMS`), shown on Data sources, and declares no
   licence; the attribution is shown on the Datasets page. A deployment's
   licence on its Data sources page is the one enforced; until one is set,
   the lake keeps the rows and reads every use right restrictively. A gap in
-  either dataset is asked again of the portal (`gap_recovery` `backfill`).
+  any dataset is asked again of the portal (`gap_recovery` `backfill`).
 - **For information purposes only.** The ECB publishes the reference rates
-  for information and discourages using them for transactions.
+  for information and discourages using them for transactions; the yield
+  curves are for public information only, not for calculating price or
+  yield quotations, and are estimated from MTS's bond prices and Fitch's
+  ratings
+  ([euro area yield curves](https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_area_yield_curves/html/index.en.html)).
 - **No endorsement.** This project is not affiliated with or endorsed by the
   European Central Bank.
 
 ## Licence
 
 Apache-2.0 (LICENSE, NOTICE). The ECB's answers under `src/ecb/responses/`
-are its reference rates as received on 2026-10-19 and its €STR series as
-received on 2026-10-23.
+are its reference rates as received on 2026-10-19, its €STR series as
+received on 2026-10-23 and its yield curves' points as received on
+2026-11-19.

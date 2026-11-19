@@ -1,6 +1,7 @@
 """Shared stand-ins: the ECB's recorded answers, a fixed clock, TARGET's
-calendar as core answers it, the platform's seeded €STR records, and the
-lake's wants as the sidecar delivers them."""
+calendar as core answers it, the platform's seeded €STR records and the
+yield curves' records as a deployment would hold them, and the lake's wants
+as the sidecar delivers them."""
 
 from __future__ import annotations
 
@@ -15,6 +16,8 @@ from meridian.plugin.v1 import operations_pb2 as ops
 from meridian.receive import Heard
 from meridian.suites import Recorder
 
+from ecb.curve import CURVES
+from ecb.curve_feed import CurveFeed
 from ecb.declared import TARGET_CALENDAR
 from ecb.estr import SERIES
 from ecb.estr_feed import EstrFeed
@@ -43,6 +46,14 @@ ESTR_PUBLISHED_NS = 1792740016 * 10**9
 #: The platform's seeded records, as the recorder resolves them: `INS-ESTR0`
 #: for €STR, then its averages, then the index, in estr.SERIES's order.
 ESTR_IDS = {s.code: f"INS-ESTR{n}" for n, s in enumerate(SERIES)}
+#: After the yield curves' recording: 12:00 UTC on Wednesday 18 November
+#: 2026, the curves of Tuesday 17 November published at 11:00:00 UTC.
+CURVE_AT = datetime(2026, 11, 18, 12, 0, tzinfo=UTC)
+CURVE_DATASET = f"{INSTANCE}:ecb_yc"
+CURVE_PUBLISHED_NS = 1794999600 * 10**9
+#: Each curve's record, as the recorder resolves it by its symbol at the
+#: ECB: `INS-CURVE0` for the AAA curve, `INS-CURVE1` for all ratings.
+CURVE_IDS = {c.code: f"INS-CURVE{n}" for n, c in enumerate(CURVES)}
 
 
 def recorded() -> str:
@@ -85,7 +96,8 @@ def recorder(ambiguous: str = "", missing: str = "") -> Recorder:
                 return ops.ResolveIdentifierResult(
                     found=False, miss_reason=ops.MISS_REASON_NOT_FOUND
                 )
-            return ops.ResolveIdentifierResult(found=True, instrument_id=ESTR_IDS[code])
+            held = CURVE_IDS.get(code) or ESTR_IDS[code]
+            return ops.ResolveIdentifierResult(found=True, instrument_id=held)
         if code == ambiguous:
             return ops.ResolveIdentifierResult(found=False, miss_reason=ops.MISS_REASON_AMBIGUOUS)
         if code == missing:
@@ -112,10 +124,10 @@ def feed(tmp: Path, plugin: Recorder | None = None, at: datetime = AT, portal: A
 _BOUND: dict[int, tuple[Feed, Recorder]] = {}
 
 
-def lake_of(work: Feed | EstrFeed) -> Recorder:
-    """The recorder `work` -- a feed `feed` made, or €STR's beside one --
-    is bound to."""
-    fx = work.fx if isinstance(work, EstrFeed) else work
+def lake_of(work: Feed | EstrFeed | CurveFeed) -> Recorder:
+    """The recorder `work` -- a feed `feed` made, or €STR's or the curves'
+    beside one -- is bound to."""
+    fx = work.fx if isinstance(work, EstrFeed | CurveFeed) else work
     return _BOUND[id(fx)][1]
 
 
@@ -125,6 +137,14 @@ def estr_feed(
     """€STR's work beside the reference rates', on the recorder and the
     recorded answers, at `at`."""
     return EstrFeed(feed(tmp, plugin, at, portal))
+
+
+def curve_feed(
+    tmp: Path, plugin: Recorder | None = None, at: datetime = CURVE_AT, portal: Any = None
+) -> CurveFeed:
+    """The yield curves' work beside the reference rates', on the recorder
+    and the recorded answers, at `at`."""
+    return CurveFeed(feed(tmp, plugin, at, portal))
 
 
 def want(

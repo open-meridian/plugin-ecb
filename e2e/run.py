@@ -40,6 +40,16 @@ October a fixing of 2.442 per cent, act/360 simple, with its volume, count,
 percentiles and published time, the index an index level based 1 October
 2019 = 100, and a backfilled day with no published time. In the lake each
 €STR subject is named by its seed's code.
+
+The yield curves (`ecb_yc`, 0.6.0), beside them: sample data's curves read
+to 17 November 2026; core listing `ecb:ecb_yc` as declared; each of the two
+curves asked of the deployment by its symbol at the ECB and, since the
+platform seeds no record for either yet, reported missing and never minted,
+its rates waiting: the lake holds none of their rates, only the two misses
+the instance reported (e2e/expected.lake's `miss|ecb|2`; a new container
+reports them once more, step 8); licensed and entitled beside the others.
+The Connection page's Sources and the Datasets page's Records are tabs of
+their own (0.6.0).
 """
 
 import json
@@ -58,6 +68,7 @@ DATASET = "ecb:ecb_fx"
 #: platform's licence list: core's FIRST_AGAIN_AFTER (60 s) and a margin.
 LICENCE_LIST_READ = 80
 ESTR = "ecb:ecb_estr"
+CURVES = "ecb:ecb_yc"
 
 
 class Failed(Exception):
@@ -168,8 +179,9 @@ def run():
     # plugin would otherwise find them at its next hourly check.
     time.sleep(max(0.0, LICENCE_LIST_READ - (time.monotonic() - up_at)))
     runner("settings", "sample_data=true")
-    runner("page", "--level", "admin", "/datasets", "--until", 'data-code="ZAR"', "--seconds", "120")
-    runner("page", "--level", "admin", "/", "--until", "Mon 19 Oct", "--seconds", "60")
+    runner("page", "--level", "admin", "/datasets?tab=records", "--until", 'data-code="ZAR"',
+           "--seconds", "120")
+    runner("page", "--level", "admin", "/?tab=sources", "--until", "Mon 19 Oct", "--seconds", "60")
     until(60, lambda: store_lake().count("row|ecb:ecb_fx|price|") >= 203,
           "step 2, the 203 current rates were not recorded")
 
@@ -192,7 +204,7 @@ def run():
     ids = {code: instrument for instrument, code in codes.items()}
     must(len(ids) == 30 and datasets["served"][0]["dataset"] == DATASET,
          f"step 3, read_datasets names 30 instruments: {datasets}")
-    shown = page("ecb", "admin", "/datasets")
+    shown = page("ecb", "admin", "/datasets?tab=records")
     must(all(instrument in shown for instrument in codes), "step 3, Datasets shows what read_datasets answers")
     listed = {d["dataset"]: d for d in call("dashboard__list_datasets")["datasets"]}
     entry = listed.get(DATASET, {}).get("catalogue_entry", {})
@@ -219,6 +231,21 @@ def run():
     estr_ids = {r["code"]: r["instrument_id"] for r in rates}
     until(60, lambda: store_lake().count(f"row|{ESTR}|rate|") >= 413,
           f"step 3, €STR's current range and history recorded: {estr_read}")
+    # The yield curves: read, declared, each curve asked by its symbol at the
+    # ECB and, held by no record here, reported missing and never minted.
+    curves_entry = listed.get(CURVES, {}).get("catalogue_entry", {})
+    must(curves_entry.get("modes") == ["push", "pull"] and curves_entry.get("history") == 8100
+         and curves_entry.get("data_types") == ["meridian.v1.Rate"]
+         and curves_entry.get("calendar_id") == "CAL-01M4VF0F5ZRTY7AZ3B36ZVWN11",
+         f"step 3, core lists ecb_yc as declared: {listed.get(CURVES)}")
+    until(120, lambda: (lambda s: s if s.get("last_release") == "2026-11-17" else None)(
+        next((s for s in call(read_connection)["sources"] if s["dataset"] == CURVES), {})),
+        "step 3, the yield curves read to 17 November")
+    curves = call(read_datasets)["curves"]
+    must(len(curves) == 2 and all(not c["instrument_id"] and c["miss"] for c in curves)
+         and curves[0]["code"] == "YC.B.U2.EUR.4F.G_N_A.SV_C_YM",
+         f"step 3, the two curves asked and, not held, reported missing: {curves}")
+    must(f"row|{CURVES}|" not in store_lake(), "step 3, a curve's rate recorded with no record")
 
     # 4. Licensed and entitled.
     runner("licence", DATASET, "kept=true", "retention_days=0", "derived_use=true", "display=true",
@@ -227,6 +254,9 @@ def run():
     runner("licence", ESTR, "kept=true", "retention_days=0", "derived_use=true", "display=true",
            "personal_use=false", "note=€STR: free use, citing the ECB.")
     runner("entitle", "--instance", "reader", ESTR, "note=The e2e's reader reads €STR.")
+    runner("licence", CURVES, "kept=true", "retention_days=0", "derived_use=true", "display=true",
+           "personal_use=false", "note=The yield curves: free use, citing the ECB.")
+    runner("entitle", "--instance", "reader", CURVES, "note=The e2e's reader may read the curves.")
     runner("grant", "--instance", "reader", "--level", "read")
 
     # 5. Read back, in the right instruments.
@@ -290,11 +320,17 @@ def run():
     # 8. A new container records nothing twice.
     compose("up", "-d", "--no-deps", "--force-recreate", "ecb")
     runner("ready")
-    until(120, lambda: "Mon 19 Oct" in page("ecb", "admin", "/"),
+    until(120, lambda: "Mon 19 Oct" in page("ecb", "admin", "/?tab=sources"),
           "step 8, the new container did not read the rates again")
+    # Its yield curves read too: a new process asks for the two curves again
+    # and, still held by no record, reports each missing once more.
+    until(120, lambda: (lambda s: s if s.get("last_release") == "2026-11-17" else None)(
+        next((s for s in call(read_connection)["sources"] if s["dataset"] == CURVES), {})),
+        "step 8, the new container did not read the yield curves again")
     time.sleep(5)
     again = named(store_lake(), codes)
-    must(again == got, "step 8, the new container recorded something twice:\n"
+    must(again == got.replace("miss|ecb|2\n", "miss|ecb|4\n"),
+         "step 8, the new container recorded something twice:\n"
          + subprocess.run(["diff", "-u", "-", ".e2e/lake"], input=again, capture_output=True, text=True).stdout[-2000:])
     logs = compose("logs", "--no-color", "ecb").stdout
     must("0 recorded, 0 restated, 203 unchanged" in logs,
@@ -312,7 +348,8 @@ def run():
           f"dollar's own instrument not covered; €STR's seven records resolved to the platform's "
           f"seeded records, its current range and history recorded once, and read back (2.442 "
           f"per cent, act/360, with volume, count, percentiles and published time; the index "
-          f"based 2019-10-01=100); `store lake` as e2e/expected.lake ({rows} rows); and a new container recording nothing twice, "
+          f"based 2019-10-01=100); the yield curves read and declared, their two records "
+          f"reported missing and never minted; `store lake` as e2e/expected.lake ({rows} rows); and a new container recording nothing twice, "
           f"its licence read on start")
 
 

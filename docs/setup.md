@@ -21,8 +21,9 @@ Its settings, in the dashboard's Settings form:
 ## Its datasets
 
 On the deployment's **Data sources** page (deployment admins), for each of
-`<instance>:ecb_fx` (the reference rates, as prices) and
-`<instance>:ecb_estr` (€STR, as rates):
+`<instance>:ecb_fx` (the reference rates, as prices),
+`<instance>:ecb_estr` (€STR, as rates) and `<instance>:ecb_yc` (the euro
+area yield curves, as rates):
 
 1. **License it.** Each dataset describes the ECB's terms in words and
    declares no licence: free use, the ECB cited as the source, and changes
@@ -30,7 +31,9 @@ On the deployment's **Data sources** page (deployment admins), for each of
    Set the licence, with a note saying why; until one is set, the lake keeps
    the rows and reads every use right restrictively.
 2. **Entitle** each plugin that reads it, such as your reporting plugin, or
-   a signal or pricing plugin reading €STR.
+   a signal or pricing plugin reading €STR or the yield curves. The yield
+   curves' terms add that the ECB publishes them for information only, not
+   for calculating price or yield quotations.
 3. **Priority**, where another dataset also states the same values: put the
    one your valuation should read first.
 
@@ -51,8 +54,17 @@ first time the plugin asks. The Datasets tab shows each record's instrument,
 or that it is not held; one not held waits, reported missing, and €STR's
 history is recorded once all seven are held.
 
+## The yield curves' records
+
+Each yield-curve rate is about one of two curve records, named by the ECB's
+key for the curve as a symbol at the ECB: `ecb:YC.B.U2.EUR.4F.G_N_A.SV_C_YM`
+(AAA) and `ecb:YC.B.U2.EUR.4F.G_N_C.SV_C_YM` (all ratings). The platform
+does not seed them yet, and the plugin never makes one: the Datasets page's
+Records tab shows each as not held, reported missing, and its rates wait
+until your deployment holds the record.
+
 ## The calendar
 
-Both datasets name the platform's "Euro (TARGET)" calendar. Your deployment
+The datasets name the platform's "Euro (TARGET)" calendar. Your deployment
 pulls it from the platform the first time the plugin reads it. If it cannot,
 Connection says so and the plugin assumes Monday to Friday.

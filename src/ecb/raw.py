@@ -58,7 +58,7 @@ import meridian
 from meridian import edge
 
 from .convert import First, frankfurt_day, row_key
-from .portal import ESTR_SERIES, Fetched
+from .portal import ESTR_SERIES, YC_SERIES, Fetched
 from .rates import Rate
 
 log = logging.getLogger("ecb")
@@ -82,11 +82,12 @@ def _ns(moment: datetime) -> int:
 
 def range_name(path: str) -> str:
     """A short name for the range an address asks: `20261009-20261019` for
-    the reference rates, `est-20261012-20261022` for €STR's series."""
+    the reference rates, `est-20261012-20261022` for €STR's series,
+    `yc-20261107-20261117` for the yield curves'."""
     found = _PERIOD.search(path)
     if found is None:
         return "answer"
-    prefix = "est-" if path.startswith(ESTR_SERIES) else ""
+    prefix = "est-" if path.startswith(ESTR_SERIES) else "yc-" if path.startswith(YC_SERIES) else ""
     return prefix + "".join(found.groups()[:3]) + "-" + "".join(found.groups()[3:])
 
 

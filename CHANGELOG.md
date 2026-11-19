@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.6.0
+
+On open-meridian 0.36.0, contract 30 (nothing new in the contract), on core
+aae501d's harness.
+
+- **The euro area yield curves, `ecb_yc`** (the product owner, item 128,
+  Tier 0, 2026-11-19; the dataset's key proposed here, the product owner's
+  to approve). A third dataset from the same Data Portal, its `YC`
+  dataflow: the AAA and all-ratings euro area government bond curves, each
+  one record and its points rows (curve.py, curve_feed.py). Each curve's
+  spot rate is recorded as a `zero` rate and its par yield as a
+  `par_yield` (item 130), in per cent, continuously compounded as the ECB
+  states both (`rates.CONTINUOUS`, as plugin-fed-board records the Board's
+  zero curve), at 3, 6 and 9 months and every whole year to 30; its
+  instantaneous forwards and Svensson parameters are not read (item 131).
+  Pushed hourly from the current range, `If-Modified-Since`; any past day
+  from 6 September 2004 pulled on a want, nothing backfilled unasked;
+  Frankfurt's day; TARGET's calendar; `gap_recovery` `backfill`. Its terms
+  in words (`declared.YC_TERMS`): the ECB's website's, then the curves'
+  page: MTS's prices and Fitch's ratings, for public information only, not
+  for calculating price or yield quotations.
+- **Each curve's record** is named by the ECB's key for it as a symbol at
+  `ecb` (`YC.B.U2.EUR.4F.G_N_A.SV_C_YM`, `YC.B.U2.EUR.4F.G_N_C.SV_C_YM`).
+  The platform seeds neither yet: until a deployment holds them, each is
+  reported missing, never minted, and its rates wait.
+- **The data suite** presents `a-curve-for-a-date` and
+  `a-tenor-not-published` (a tenor the ECB leaves out of a day is no row).
+- **Pages:** Connection's Sources and Datasets' Records are each a tab of
+  their own (`?tab=sources`, `?tab=records`, as plugin-fed-board's), so
+  each page still fits one screen with a third source and dataset; the
+  Records tab lists the two curves beside €STR's records and the
+  currencies. The tools answer every tab, as before, with `curves` beside
+  `rates` in `read_datasets`.
+- **Sample data** adds the curves' points as received on 2026-11-19, from 3
+  August to 17 November 2026.
+
 ## 0.5.0
 
 On open-meridian 0.36.0, contract 30, on core aae501d's harness (contract v30,
