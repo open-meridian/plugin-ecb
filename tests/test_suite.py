@@ -27,8 +27,12 @@ Contract v27's rates cases (`about: rates`), for €STR (estr_feed.py):
 `a-rate-fixing`, €STR itself with its volume, percentiles and convention;
 `a-same-day-revision`, the ECB revising a published €STR by 09:00, the same
 row key again with its later published time; and `an-index-level`, the
-compounded index. The ECB publishes no curve, so the four curve cases are
-not presented, each with why. Nor are contract v27's
+compounded index. For the euro area yield curves (curve_feed.py, `ecb_yc`):
+`a-curve-for-a-date`, each curve's par yields at their tenors, and
+`a-tenor-not-published`, a tenor the ECB leaves out of a day no row. The
+ECB publishes no bill (one convention a point) and no single-point series
+that is another source's curve point, so those two curve cases are not
+presented, each with why. Nor are contract v27's
 `records-a-datasets-liveness` (the plugin polls hourly and streams nothing)
 and `queries-the-lake-within-bounds`, about trades from v27 (the plugin
 records none and asks the lake nothing). From contract v28
@@ -51,12 +55,13 @@ from meridian.plugin.v1 import operations_pb2 as ops
 from meridian.roles.data.testing import feed_delay
 from meridian.suites import ANSWERED_BY_SDK, Recorder, run, suite
 
+from ecb.curve_feed import CurveFeed
 from ecb.estr_feed import EstrFeed
 from ecb.feed import Feed
 from ecb.portal import Fetched, SyntheticPortal
 from ecb.raw import RawStore
 
-from conftest import AT, DATASET, ESTR_AT, ESTR_IDS, target_2026, want
+from conftest import AT, CURVE_AT, CURVE_IDS, DATASET, ESTR_AT, ESTR_IDS, target_2026, want
 
 #: Why each kind of data a case may be about is never published here.
 NEVER = {
@@ -80,12 +85,10 @@ NEVER = {
     "derived series": "the ECB's rates are recorded as published: no series derived from them",
     "factors": "the ECB publishes reference rates: no pool, so no pool's factor",
 }
-#: The rates cases the ECB never presents: it publishes €STR, its averages
-#: and its index, and no curve.
+#: The rates cases the ECB never presents: its curves are its own, one
+#: convention a point, and it publishes no bill.
 NO_CURVE = {
-    "a-curve-for-a-date": "the ECB publishes €STR, its averages and its index: no curve",
-    "a-tenor-not-published": "the ECB publishes no curve, so no tenor goes unpublished",
-    "two-conventions-one-tenor": "the ECB publishes no bill: one convention a record",
+    "two-conventions-one-tenor": "the ECB publishes no bill: one convention a point",
     "a-curve-point-from-another-source": "the ECB publishes no curve point another source does",
 }
 
@@ -133,14 +136,34 @@ class Corrected(SyntheticPortal):
         return Fetched(path, 200, body.encode(), later, got.last_modified, got.date)
 
 
+class Gap(SyntheticPortal):
+    """The ECB's portal, the AAA curve's 7-year par yield of 17 November left
+    out of its answer."""
+
+    def __init__(self) -> None:
+        super().__init__(lambda: CURVE_AT)
+
+    async def get(self, path: str, modified_since: str = "") -> Fetched:
+        got = await super().get(path, modified_since)
+        kept = [
+            row
+            for row in got.text.splitlines()
+            if not (row.startswith("YC.B.U2.EUR.4F.G_N_A.SV_C_YM.PY_7Y,") and ",2026-11-17," in row)
+        ]
+        body = "\n".join(kept).encode()
+        return Fetched(path, got.status, body, got.fetched_at, got.last_modified, got.date)
+
+
 def _resolving(recorder: Recorder, ambiguous: str = "") -> None:
-    """Each ISO code resolved to `LCL-<code>`, each €STR record to its seed's;
+    """Each ISO code resolved to `LCL-<code>`, each €STR record to its seed's
+    and each curve to its record;
     `ambiguous` to two records; TARGET's calendar answered."""
 
     def answer(params: ops.ResolveIdentifierParams) -> ops.ResolveIdentifierResult:
         code = params.identifiers[0].value
         if params.identifiers[0].source == "ecb":
-            return ops.ResolveIdentifierResult(found=True, instrument_id=ESTR_IDS[code])
+            held = CURVE_IDS.get(code) or ESTR_IDS[code]
+            return ops.ResolveIdentifierResult(found=True, instrument_id=held)
         if code == ambiguous:
             return ops.ResolveIdentifierResult(found=False, miss_reason=ops.MISS_REASON_AMBIGUOUS)
         return ops.ResolveIdentifierResult(found=True, instrument_id=f"LCL-{code}")
@@ -226,6 +249,31 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
         ]
         assert current[0] == current[-1]
 
+    def curves(recorder: Recorder, portal: Any = None) -> CurveFeed:
+        fx = recorder.bind(Feed(
+            portal or SyntheticPortal(lambda: CURVE_AT), RawStore(tmp),
+            now=lambda: CURVE_AT,
+        ))  # fmt: skip
+        return CurveFeed(fx)
+
+    async def curves_read(recorder: Recorder) -> None:
+        _resolving(recorder)
+        await curves(recorder).check()
+
+    async def a_tenor_left_out(recorder: Recorder) -> None:
+        # The AAA curve's 7-year par yield left out of 17 November.
+        _resolving(recorder)
+        await curves(recorder, Gap()).check()
+        sent = [r for p in recorder.on("RecordRates") for r in p.rates]
+        on_17th = {
+            (r.tenor.count, r.tenor.unit)
+            for r in sent
+            if r.meta.business_date == "2026-11-17"
+            and r.kind == ops.RATE_KIND_PAR_YIELD
+            and r.meta.subjects[0].entity_id == CURVE_IDS["YC.B.U2.EUR.4F.G_N_A.SV_C_YM"]
+        }
+        assert on_17th and (7, ops.TENOR_UNIT_YEAR) not in on_17th, "no 7-year point, no zero"
+
     async def delayed(recorder: Recorder, latency: Any) -> None:
         # Contract v28 (ruling 518): the current rates read unasked, each
         # one's age at the edge recorded from its published time, reported.
@@ -255,6 +303,8 @@ def producers(tmp: Path) -> dict[str, Callable[[Recorder], Awaitable[None]]]:
         "a-rate-fixing": estr_read,
         "a-same-day-revision": estr_revised,
         "an-index-level": estr_read,
+        "a-curve-for-a-date": curves_read,
+        "a-tenor-not-published": a_tenor_left_out,
         "reports-its-feed-delay": feed_delay(delayed),
     }
 
@@ -263,10 +313,11 @@ def test_the_data_suite_passes(tmp_path: Path) -> None:
     report = run("data", producers(tmp_path), not_presented=NOT_PRESENTED, instance_id="ecb")
     assert report.passed, report.failures
     assert sorted(report.not_presented) == sorted(NOT_PRESENTED)
-    # The plugin's own fourteen -- stage 0's ten, the rates slice's three
-    # and v28's feed delay -- and the cases every suite holds that the SDK answers (contract v24's
-    # two, v26's event group).
-    assert len(report.passed_cases) == 14 + len(ANSWERED_BY_SDK)
+    # The plugin's own sixteen -- stage 0's ten, the rates slice's five
+    # (three of €STR's, two of the curves') and v28's feed delay -- and the
+    # cases every suite holds that the SDK answers (contract v24's two,
+    # v26's event group).
+    assert len(report.passed_cases) == 16 + len(ANSWERED_BY_SDK)
     assert report.answered_by_sdk == list(ANSWERED_BY_SDK)
     assert "reads-a-calendar" in report.passed_cases
 

@@ -49,7 +49,7 @@ from meridian.roles import Latency, data
 
 from . import target
 from .convert import First, day_bounds, frankfurt_day, to_prices
-from .declared import ECB_ESTR, ECB_FX, HISTORY
+from .declared import ECB_ESTR, ECB_FX, ECB_YC, HISTORY
 from .portal import Fetched, Portal, PortalUnreachable, path_for, utc_now
 from .rates import EUR, NotRates, Rate, Rates, last_modified_ns, parse
 from .raw import RawStore
@@ -137,17 +137,17 @@ class Feed(data.Role):
         self.portal = portal
         self.raw = raw
         self.now = now
-        # One Wants for the plugin's two datasets: their licences read
+        # One Wants for the plugin's three datasets: their licences read
         # together, each want heard here and answered by its dataset's feed.
-        self.wants = data.Wants(self, (ECB_FX, ECB_ESTR), clock_ns=lambda: _ns(self.now()))
+        self.wants = data.Wants(self, (ECB_FX, ECB_ESTR, ECB_YC), clock_ns=lambda: _ns(self.now()))
         # Contract v28 (ruling 518): each row recorded unasked or for a
         # standing want has its age at the edge recorded where it states its
         # published time, reported every 10 seconds (`__main__`).
         self.latency = Latency(self, clock_ns=lambda: _ns(self.now()))
         self.wants.latency = self.latency
         self.status = Status(mode=portal.mode, started_at=now())
-        #: The other datasets' answers to a want, by key: `ecb_estr`'s, set
-        #: by its feed (estr_feed.py).
+        #: The other datasets' answers to a want, by key: `ecb_estr`'s and
+        #: `ecb_yc`'s, each set by its feed (estr_feed.py, curve_feed.py).
         self.answers: dict[str, Answer] = {}
         self._recorded_digest = ""
         self._modified = ""

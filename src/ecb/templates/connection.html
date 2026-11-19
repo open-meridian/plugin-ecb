@@ -1,22 +1,32 @@
 {#- Connection, at admin: the data role's (meridian/roles/data/connection.html),
     with the ECB's nuance at its blocks only -- the head's status, and
-    "Sources" as a section of its own, one line per source (the spec's §5),
-    drawn as the role's fact rows so the page fits a phone's screen:
-    the reference rates and €STR, each row's detail saying where it reads,
-    when it publishes, how TARGET's calendar was read, how far its history
-    is recorded and the answers kept. No rate: prices are the reading
-    roles'. -#}
+    "Sources", from 0.6.0 a tab of its own to keep each to one screen (as
+    plugin-fed-board's), one line per source (the spec's §5), drawn as the
+    role's fact rows: the reference rates, €STR and the yield curves, each
+    row's detail saying where it reads, when it publishes, how TARGET's
+    calendar was read, how far its history is recorded and the answers
+    kept. The tab row follows the page's own, so it stays when the dashboard
+    frames the page. No rate: prices are the reading roles'. -#}
 {% extends "meridian/roles/data/connection.html" %}
 {% import "meridian/kit.html" as kit %}
 {% block status %}{{ kit.status({"state": data.state, "label": data.said, "detail": detail, "at": data.checked_at, "at_label": "Last checked"}) }}{% endblock %}
-{% block vendor_sections %}
+{% block content %}
+<nav class="tabs" aria-label="Connection sections">
+{% for name, title in views.items() %}
+<a class="tab{% if name == view %} on{% endif %}" href="?tab={{ name }}"{% if name == view %} aria-current="page"{% endif %}>{{ title }}</a>
+{% endfor %}
+</nav>
+{% if view == "sources" %}
 <section class="panel">
 <h2>Sources</h2>
 <table class="one-line">
 <tbody>
 {% for s in data.sources %}
-<tr data-source="{{ s.dataset }}"><th scope="row">{{ "€STR" if s.dataset.endswith(":ecb_estr") else "Reference rates" }}</th><td>{{ s.state }}, {{ ("last " ~ (s.last_release|day)) if s.last_release else "none yet" }}<span class="hint wide-only">{{ (", next " ~ (s.next_expected|day)) if s.next_expected else "" }}{{ (", " ~ s.calls ~ " calls") }}</span></td><td class="more"><details class="row-detail" name="sources"><summary aria-label="Details of {{ s.source }}">…</summary><div class="row-detail-pop"><h3>{{ s.source }}</h3><dl><dt>Dataset</dt><dd><code>{{ s.dataset }}</code></dd><dt>Reads</dt><dd>{{ s.reads or data.source }}, every hour</dd><dt>State</dt><dd>{{ s.state }}</dd><dt>Last release</dt><dd>{{ (s.last_release|day) if s.last_release else "Not yet" }}{% if s.published_at %}, the portal's values last changed {{ s.published_at|moment }}{% endif %}</dd><dt>Next expected</dt><dd>{{ ((s.next_expected|day) ~ ", " ~ s.published_around) if s.next_expected else "Not known" }}</dd><dt>Calendar</dt><dd>{{ data.calendar or "Not read yet" }}</dd><dt>History</dt><dd>{{ s.history or "Not recorded" }}</dd><dt>Calls</dt><dd>{{ s.calls }}, {{ s.not_modified }} answered unchanged</dd><dt>Last error</dt><dd>{{ s.last_error or "None" }}</dd><dt>Answers kept</dt><dd>{{ data.responses_kept }}{% if data.kept_for %}, {{ data.kept_for }}{% endif %}</dd></dl></div></details></td></tr>
+<tr data-source="{{ s.dataset }}"><th scope="row">{{ "€STR" if s.dataset.endswith(":ecb_estr") else "Yield curves" if s.dataset.endswith(":ecb_yc") else "Reference rates" }}</th><td>{{ s.state }}, {{ ("last " ~ (s.last_release|day)) if s.last_release else "none yet" }}<span class="hint wide-only">{{ (", next " ~ (s.next_expected|day)) if s.next_expected else "" }}{{ (", " ~ s.calls ~ " calls") }}</span></td><td class="more"><details class="row-detail" name="sources"><summary aria-label="Details of {{ s.source }}">…</summary><div class="row-detail-pop"><h3>{{ s.source }}</h3><dl><dt>Dataset</dt><dd><code>{{ s.dataset }}</code></dd><dt>Reads</dt><dd>{{ s.reads or data.source }}, every hour</dd><dt>State</dt><dd>{{ s.state }}</dd><dt>Last release</dt><dd>{{ (s.last_release|day) if s.last_release else "Not yet" }}{% if s.published_at %}, the portal's values last changed {{ s.published_at|moment }}{% endif %}</dd><dt>Next expected</dt><dd>{{ ((s.next_expected|day) ~ ", " ~ s.published_around) if s.next_expected else "Not known" }}</dd><dt>Calendar</dt><dd>{{ data.calendar or "Not read yet" }}</dd><dt>History</dt><dd>{{ s.history or "Not recorded" }}</dd><dt>Calls</dt><dd>{{ s.calls }}, {{ s.not_modified }} answered unchanged</dd><dt>Last error</dt><dd>{{ s.last_error or "None" }}</dd><dt>Answers kept</dt><dd>{{ data.responses_kept }}{% if data.kept_for %}, {{ data.kept_for }}{% endif %}</dd></dl></div></details></td></tr>
 {% endfor %}
 </tbody></table>
 </section>
+{% else %}
+{{ super() }}
+{% endif %}
 {% endblock %}

@@ -5,7 +5,9 @@ each extended with the ECB's own fields under the names
 spec/a-public-rates-and-filings-data-plugin §5 gives its vendor sections:
 Connection's **Sources**, and Datasets' **Records** and **Lag**. From 0.2.0
 each lists `ecb_estr` beside `ecb_fx`: a second source, a second dataset's
-lag, and the seven €STR records (`rates`) beside the currencies. The
+lag, and the seven €STR records (`rates`) beside the currencies; from 0.6.0
+`ecb_yc` too: a third source, a third lag, and the two yield curves
+(`curves`). The
 Connection tab is `read_connection`, the Datasets tab `read_datasets`, each
 answering what its page shows, as data, under the role's names.
 
@@ -86,8 +88,9 @@ class RecordRead:
 @dataclass(frozen=True)
 class RateRecordRead:
     """One of the seven records `ecb_estr` rates, as "Records" lists it
-    (0.2.0): the seed's code (its symbol at the ECB) and name, the kind of
-    rate it is recorded as, the ECB's series, the deployment's instrument
+    (0.2.0), or from 0.6.0 one of the two curves `ecb_yc` rates (`kind`
+    `curve`): the record's code (its symbol at the ECB) and name, the kind
+    of rate it is recorded as, the ECB's series, the deployment's instrument
     resolved for it or why there is none, and the latest day recorded."""
 
     code: str
@@ -119,7 +122,8 @@ class DatasetsRead(data.DatasetsRead):
     """Datasets' common fields, then the ECB's: the attribution its terms
     ask for, each currency it rates ("Records"), the lag of each dataset's
     rates ("Lag"), and the lines it could not read; from 0.2.0 each of the
-    seven €STR records (`rates`, "Records" too). Its rows are the role's."""
+    seven €STR records (`rates`, "Records" too), and from 0.6.0 the two
+    yield curves (`curves`, "Records" too). Its rows are the role's."""
 
     served: list[data.Served] = field(default_factory=list)
     wants: list[data.WantHeard] = field(default_factory=list)  # type: ignore[assignment]
@@ -130,3 +134,4 @@ class DatasetsRead(data.DatasetsRead):
     #: with how often seen.
     unread: list[str] = field(default_factory=list)
     rates: list[RateRecordRead] = field(default_factory=list)
+    curves: list[RateRecordRead] = field(default_factory=list)

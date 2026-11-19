@@ -51,6 +51,28 @@ backfilled once, and any past day pulled when the lake wants it:
 - its terms the ECB's, in plain words (`ESTR_TERMS`), and a gap asked
   again (`backfill`), as `ecb_fx`'s.
 
+**`ecb_yc`** (the product owner, item 128, 2026-11-19; its key proposed,
+the product owner's to approve). The euro area's government bond yield
+curves, AAA-rated and all ratings, each TARGET business day's pushed when
+the ECB publishes them and any past day pulled when the lake wants it
+(curve.py, curve_feed.py):
+
+- `vendor` the European Central Bank, no aggregator: the ECB estimates the
+  curves itself, from MTS's bond prices and Fitch's ratings, which its
+  terms name;
+- `data_types` rates (`meridian.v1.Rate`), each curve's spot rate as a zero
+  rate and its par yield as a par yield at each tenor carried; never its
+  forwards or Svensson parameters (items 130 and 131);
+- `modes` `push` and `pull`; `cadence` a day;
+- `history` about 8,100 days: the curves from 6 September 2004;
+- its day Frankfurt's, ending at midnight, and its calendar TARGET's: the
+  ECB estimates the curves for each TARGET business day and publishes them
+  at noon CET the next one;
+- its terms the ECB's, in plain words (`YC_TERMS`): the website's, then the
+  curves' own page -- the sources it names, and that the curves are for
+  information only, not for calculating price or yield quotations -- and a
+  gap asked again (`backfill`): the portal serves every past day.
+
 **Storage:** the portal's answers (raw.py), archivable, ten years by default.
 """
 
@@ -86,6 +108,16 @@ FX_TERMS = ECB_TERMS + (
     "reliance on them."
 )
 ESTR_TERMS = ECB_TERMS + " The ECB does not charge for the euro short-term rate or license its use."
+#: The yield curves' own page and technical notes, read on 2026-11-19.
+YC_TERMS = ECB_TERMS + (
+    " The euro area yield curves are the ECB's estimates from euro area central government "
+    "bonds: bond and price information provided by MTS Markets, ratings by Fitch Ratings. "
+    "They are published for public information only, not to be used for any other purpose, "
+    "including calculating price or yield quotations, nor to identify trading opportunities "
+    "or as a basis for advice on pricing financial assets; the ECB accepts no liability for "
+    "errors, delays or action taken in reliance on them. This dataset carries each curve's "
+    "spot rates and par yields; its forward rates and model parameters are not carried."
+)
 #: The platform's "Euro (TARGET)" currency calendar, read from the platform
 #: on 2026-10-19: TARGET's closing days, which the ECB's Governing Council
 #: set, on which it publishes no reference rate.
@@ -126,6 +158,28 @@ ECB_ESTR_DATASET = DatasetDeclaration(
     cadence=CADENCE,
     history=ESTR_HISTORY,
     terms_and_pricing=ESTR_TERMS,
+    gap_recovery="backfill",
+    day_time_zone=DAY_TIME_ZONE,
+    day_end_minute=DAY_END_MINUTE,
+    calendar_id=TARGET_CALENDAR,
+)
+
+#: The yield curves' dataset key (proposed: the product owner approves a new
+#: dataset name): its rows name `<instance>:ecb_yc`.
+ECB_YC = "ecb_yc"
+#: The curves' history, in days: from 6 September 2004, about 8,100.
+YC_HISTORY = 8_100
+#: The first day the ECB published the curves for.
+YC_FROM = date(2004, 9, 6)
+
+ECB_YC_DATASET = DatasetDeclaration(
+    key=ECB_YC,
+    vendor=VENDOR,
+    data_types=["meridian.v1.Rate"],
+    modes=["push", "pull"],
+    cadence=CADENCE,
+    history=YC_HISTORY,
+    terms_and_pricing=YC_TERMS,
     gap_recovery="backfill",
     day_time_zone=DAY_TIME_ZONE,
     day_end_minute=DAY_END_MINUTE,

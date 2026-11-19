@@ -3,18 +3,20 @@ short-term rate as an Open Meridian data plugin: stages 0 and 1 of the ECB's
 data plugin (spec/a-public-rates-and-filings-data-plugin §8; one plugin per
 publisher's feed, rulings 343 to 349). Each TARGET business day's reference
 rates into the deployment's lake, each rate the price of the euro's cash
-instrument in the other currency, as the ECB quotes it (`ecb_fx`); and each
+instrument in the other currency, as the ECB quotes it (`ecb_fx`); each
 day's €STR, its compounded averages and its compounded index as rates
-(`ecb_estr`, contract v27's rates slice).
+(`ecb_estr`, contract v27's rates slice); and each day's euro area yield
+curves, their spot rates and par yields as rates (`ecb_yc`).
 
-It runs its data role class, `Lake` (feed.py's `Feed`, with €STR's work
-beside it and its lifecycle here), with `meridian.run` on the sidecar it is
+It runs its data role class, `Lake` (feed.py's `Feed`, with €STR's and the
+yield curves' work beside it and its lifecycle here), with `meridian.run` on the sidecar it is
 launched beside, declaring its catalogue, its storage and its one setting
 (declaration.py); `meridian.run` delivers the settings, serves its two pages
 (page.py), hands it what the lake wants of it, and sets the data role's
-figures on each heartbeat. It reads the ECB's current reference rates and
-€STR at start and every hour, recording what it has not recorded in this
-process (feed.py, estr_feed.py), and €STR's history once (estr_feed.py).
+figures on each heartbeat. It reads the ECB's current reference rates, €STR
+and yield curves at start and every hour, recording what it has not
+recorded in this process (feed.py, estr_feed.py, curve_feed.py), and
+€STR's history once (estr_feed.py).
 What the portal answered is kept in the storage the deployment grants
 (raw.py), and moved past its window as the settings say. It reads which of
 its datasets a deployment admin has licensed, on start and every minute.
@@ -37,6 +39,7 @@ from typing import Any
 
 import meridian
 
+from .curve_feed import CurveFeed
 from .declaration import DECLARATION, PORT
 from .estr_feed import EstrFeed
 from .feed import Feed
@@ -57,7 +60,8 @@ LICENCES_SECONDS = 60
 
 class Lake(Feed):
     """The data role's class with its lifecycle (open-meridian 0.35, rulings
-    1004, 1005, 1009 to 1023), €STR's work beside it on the same wants:
+    1004, 1005, 1009 to 1023), €STR's and the yield curves' work beside it
+    on the same wants:
     `meridian.run` delivers each settings to `on_settings` -- the first
     before anything is heard -- and starts `run`, again after a backoff
     should it fail."""
@@ -65,6 +69,7 @@ class Lake(Feed):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.estr = EstrFeed(self)
+        self.curve = CurveFeed(self)
         self.config = Config()
         self.wake = asyncio.Event()
 
@@ -83,11 +88,16 @@ class Lake(Feed):
         await asyncio.gather(self._check(), self._tend(), self._licences(), self.latency.run())
 
     async def _check(self) -> None:
-        """Read the current rates and €STR at once, then hourly, or at once
-        when the settings change."""
+        """Read the current rates, €STR and the yield curves at once, then
+        hourly, or at once when the settings change."""
         while True:
             self.wake.clear()
-            for status, work in ((self.status, self.check), (self.estr.status, self.estr.check)):
+            checks: tuple[tuple[Any, Any], ...] = (
+                (self.status, self.check),
+                (self.estr.status, self.estr.check),
+                (self.curve.status, self.curve.check),
+            )
+            for status, work in checks:
                 try:
                     await work()
                 except meridian.MeridianError as failed:
@@ -120,7 +130,7 @@ def main() -> None:
         level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
     lake = Lake(portal(False), RawStore())
-    hold(lake, lake.estr)
+    hold(lake, lake.estr, lake.curve)
     # The version's whole declaration (declaration.py): its settings, its
     # pages with the levels each serves and their tools, and its
     # documentation. A version registers exactly what it was uploaded with
@@ -131,7 +141,7 @@ def main() -> None:
         pages=pages,
         port=PORT,
         on_settings=lake.on_settings,
-        figures=lambda: figures(lake.status, lake, lake.estr.status),
+        figures=lambda: figures(lake.status, lake, lake.estr.status, lake.curve.status),
     )
 
 

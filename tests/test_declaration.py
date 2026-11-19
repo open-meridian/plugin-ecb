@@ -14,8 +14,10 @@ from ecb.declared import (
 )
 
 
-def test_two_daily_datasets_prices_and_rates() -> None:
-    assert [d.key for d in DECLARATION.catalogue] == ["ecb_fx", "ecb_estr"]
+def test_three_daily_datasets_prices_and_rates() -> None:
+    # `ecb_yc`'s key proposed with its version (the product owner approves a
+    # new dataset name); its declaration is test_curve.py's to hold.
+    assert [d.key for d in DECLARATION.catalogue] == ["ecb_fx", "ecb_estr", "ecb_yc"]
     assert list(ECB_FX_DATASET.data_types) == ["meridian.v1.Price"]
     modes = [ops.ObservationMode.Name(m) for m in ECB_FX_DATASET.modes]
     assert modes == ["OBSERVATION_MODE_PUSH", "OBSERVATION_MODE_PULL"]

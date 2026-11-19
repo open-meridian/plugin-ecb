@@ -1,5 +1,5 @@
 {
-  "said": "The ECB Data Portal's real responses, recorded by meridian-ecb's authors, the body gzipped: every euro foreign exchange reference rate from 3 August to 19 October 2026 (recorded 2026-10-19), and every euro short-term rate (€STR) series -- the rate with its volume, transactions, banks and percentiles, its compounded averages and its compounded index -- from 3 August to 22 October 2026 (recorded 2026-10-23), as SDMX-CSV. The ECB allows free use of the information on its website provided it is reproduced accurately and the ECB is cited as the source (https://www.ecb.europa.eu/home/disclaimer/html/index.en.html). Sample data answers each request for a range of days from them, and the tests read them.",
+  "said": "The ECB Data Portal's real responses, recorded by meridian-ecb's authors, the body gzipped: every euro foreign exchange reference rate from 3 August to 19 October 2026 (recorded 2026-10-19), and every euro short-term rate (€STR) series -- the rate with its volume, transactions, banks and percentiles, its compounded averages and its compounded index -- from 3 August to 22 October 2026 (recorded 2026-10-23), and the euro area's AAA and all-ratings government bond yield curves -- spot rates and par yields at 3, 6 and 9 months and every whole year to 30 -- from 3 August to 17 November 2026 (recorded 2026-11-19), as SDMX-CSV. The ECB allows free use of the information on its website provided it is reproduced accurately and the ECB is cited as the source (https://www.ecb.europa.eu/home/disclaimer/html/index.en.html). Sample data answers each request for a range of days from them, and the tests read them.",
   "response": {
     "path": "/service/data/EXR/D..EUR.SP00.A?format=csvdata&startPeriod=2026-08-03&endPeriod=2026-10-19",
     "file": "exr-20260803-20261019.csv.gz",
@@ -17,5 +17,14 @@
     "last_modified": "Fri, 23 Oct 2026 07:20:16 GMT",
     "first_day": "2026-08-03",
     "last_day": "2026-10-22"
+  },
+  "yc": {
+    "path": "/service/data/YC/B.U2.EUR.4F.G_N_A+G_N_C.SV_C_YM.SR_3M+SR_6M+SR_9M+SR_1Y+SR_2Y+SR_3Y+SR_4Y+SR_5Y+SR_6Y+SR_7Y+SR_8Y+SR_9Y+SR_10Y+SR_11Y+SR_12Y+SR_13Y+SR_14Y+SR_15Y+SR_16Y+SR_17Y+SR_18Y+SR_19Y+SR_20Y+SR_21Y+SR_22Y+SR_23Y+SR_24Y+SR_25Y+SR_26Y+SR_27Y+SR_28Y+SR_29Y+SR_30Y+PY_3M+PY_6M+PY_9M+PY_1Y+PY_2Y+PY_3Y+PY_4Y+PY_5Y+PY_6Y+PY_7Y+PY_8Y+PY_9Y+PY_10Y+PY_11Y+PY_12Y+PY_13Y+PY_14Y+PY_15Y+PY_16Y+PY_17Y+PY_18Y+PY_19Y+PY_20Y+PY_21Y+PY_22Y+PY_23Y+PY_24Y+PY_25Y+PY_26Y+PY_27Y+PY_28Y+PY_29Y+PY_30Y?format=csvdata&startPeriod=2026-08-03&endPeriod=2026-11-17",
+    "file": "yc-20260803-20261117.csv.gz",
+    "status": 200,
+    "date": "Thu, 19 Nov 2026 04:19:03 GMT",
+    "last_modified": "Wed, 18 Nov 2026 11:00:00 GMT",
+    "first_day": "2026-08-03",
+    "last_day": "2026-11-17"
   }
 }

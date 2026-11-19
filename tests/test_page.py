@@ -10,29 +10,34 @@ import pytest
 from meridian.testing import PageClient
 
 from ecb import page as page_module
+from ecb.curve import CURVES
+from ecb.curve_feed import CurveFeed
 from ecb.estr import SERIES
 from ecb.estr_feed import EstrFeed
 from ecb.page import CONNECTION, DATASETS, figures, hold, pages
 
-from conftest import CODES, ESTR_IDS, feed, want
+from conftest import CODES, CURVE_IDS, ESTR_IDS, feed, want
 
-#: Every record Datasets lists: the euro, its 29 currencies, and €STR's seven.
-RECORDS = len(CODES) + 1 + len(SERIES)
+#: Every record Datasets lists: the euro, its 29 currencies, €STR's seven
+#: and the two yield curves.
+RECORDS = len(CODES) + 1 + len(SERIES) + len(CURVES)
 
 
 @pytest.fixture
 def client(tmp_path: Path) -> PageClient:
     work = feed(tmp_path)
     estr = EstrFeed(work)
+    curve = CurveFeed(work)
 
     async def run() -> None:
         await work.check()
         await estr.check()
+        await curve.check()
         await work.on_observations_wanted(want("w-0925", ["LCL-EUR"], day="2026-09-25"))
         await work.on_observations_wanted(want("w-standing", ["LCL-EUR"], standing=True))
 
     asyncio.run(run())
-    hold(work, estr)
+    hold(work, estr, curve)
     return PageClient(pages)
 
 
@@ -52,14 +57,19 @@ def test_each_page_is_managed_alone(client: PageClient) -> None:
 
 def test_connection_says_how_the_ecb_is_reached(client: PageClient) -> None:
     text = client.get(CONNECTION, "admin").text
-    # The data role's sections, in its order, then the ECB's Sources, a line
-    # a source; no Sessions, as it measures none (SDK 0.32.2).
+    # The data role's sections, in its order; no Sessions, as it measures
+    # none (SDK 0.32.2). The ECB's Sources a tab of its own, to keep each to
+    # one screen (0.6.0).
+    assert text.index('href="?tab=sources"') < text.index("<h2>Key</h2>")
     assert text.index("<h2>Key</h2>") < text.index("<h2>Limits and use</h2>")
-    assert text.index("<h2>Stream</h2>") < text.index("<h2>Sources</h2>")
-    assert "<h2>Sessions</h2>" not in text
-    assert text.count("<tr data-source=") == 2
+    assert text.index("<h2>Limits and use</h2>") < text.index("<h2>Stream</h2>")
+    assert "<h2>Sessions</h2>" not in text and "<h2>Sources</h2>" not in text
     assert 'state="ok"' in text and "Sample data" in text
     assert "No key needed" in text and "Does not stream" in text
+    assert 'href="/.meridian/ui/0.12.0/meridian.css"' in text
+    text = client.get(CONNECTION, "admin", tab="sources").text
+    assert "<h2>Sources</h2>" in text and "<h2>Key</h2>" not in text
+    assert text.count("<tr data-source=") == 3
     assert "Mon 19 Oct" in text  # the latest day published
     assert "Tue 20 Oct" in text  # the next one expected, by TARGET's calendar
     assert "TARGET closing days, version 1" in text
@@ -67,22 +77,31 @@ def test_connection_says_how_the_ecb_is_reached(client: PageClient) -> None:
     assert "ECB euro short-term rate (€STR)" in text and "ecb:ecb_estr" in text
     assert "Thu 22 Oct" in text and "Mon 26 Oct, around 08:00 CET, the rate of Fri 23 Oct" in text
     assert "Done through 2026-10-11" in text
-    assert 'href="/.meridian/ui/0.12.0/meridian.css"' in text
+    # The yield curves' line: Tuesday's curves, Wednesday's published Thursday at noon.
+    assert "ECB euro area yield curves" in text and "ecb:ecb_yc" in text
+    assert "Thu 19 Nov, around 12:00 CET, the curves of Wed 18 Nov" in text
 
 
 def test_datasets_lists_the_dataset_and_every_currency(client: PageClient) -> None:
     text = client.get(DATASETS, "admin").text
+    # "Served", the role's own, the default tab; "Records" a tab of its own
+    # (0.6.0), to keep each to one screen.
+    assert text.index('href="?tab=records"') < text.index("<h2>Served</h2>")
     assert text.index("<h2>Served</h2>") < text.index("<h2>Wants</h2>")
-    assert text.index('<th class="wide-only">Lag</th>') < text.index("<h2>Records</h2>")
-    assert "ecb:ecb_fx" in text and "ecb:ecb_estr" in text
+    assert '<th class="wide-only">Lag</th>' in text and "<h2>Records</h2>" not in text
+    assert "ecb:ecb_fx" in text and "ecb:ecb_estr" in text and "ecb:ecb_yc" in text
     # Each dataset's terms in words (contract 30, ruling 1032).
     assert "cited as the source" in text and "for information only" in text
+    assert "price or yield quotations" in text
     assert "Not licensed yet" in text
-    assert text.count("<tr data-code=") == RECORDS
-    assert "<om-pager>" in text and "Kept current" in text
+    assert "<om-pager" in text and "Kept current" in text
     assert "15 h 56 m median" in text and "33 h 20 m median" in text
+    text = client.get(DATASETS, "admin", tab="records").text
+    assert "<h2>Records</h2>" in text and "<h2>Served</h2>" not in text
+    assert text.count("<tr data-code=") == RECORDS
     assert "fixings in ecb_estr" in text and "index levels in ecb_estr" in text
-    assert "Source: European Central Bank" in text and "cited as the source" in text
+    assert text.count("zero rates and par yields in ecb_yc") == len(CURVES)
+    assert "Source: European Central Bank" in text
 
 
 def test_the_tools_answer_what_the_pages_show(client: PageClient) -> None:
@@ -95,19 +114,26 @@ def test_the_tools_answer_what_the_pages_show(client: PageClient) -> None:
     assert data["mode"] == "Sample data" and data["credentials"] == []
     assert data["sessions"] is None and data["next_release"] == "2026-10-20"
     assert data["published_at"] == "2026-10-19T13:56:57+00:00"
-    source, estr = data["sources"]
+    source, estr, curves = data["sources"]
     assert source["dataset"] == "ecb:ecb_fx" and source["next_expected"] == "2026-10-20"
     assert estr["dataset"] == "ecb:ecb_estr" and estr["last_release"] == "2026-10-22"
     assert estr["next_expected"] == "2026-10-26"
     assert estr["published_at"] == "2026-10-23T07:20:16+00:00"
     assert estr["history"] == "Done through 2026-10-11"
+    assert curves["dataset"] == "ecb:ecb_yc" and curves["last_release"] == "2026-11-17"
+    assert curves["next_expected"] == "2026-11-19"
+    assert curves["published_at"] == "2026-11-18T11:00:00+00:00"
     datasets = client.call_tool("read_datasets")
     assert datasets.outcome == "unchanged"
     read = datasets.data
-    served, rates = read["served"]
+    served, rates, yc = read["served"]
     assert served["dataset"] == "ecb:ecb_fx" and served["arrives"] == "push, pull"
     assert served["recorded"] >= 203 and served["licensed"] is False
     assert rates["dataset"] == "ecb:ecb_estr" and rates["recorded"] > 0
+    assert yc["dataset"] == "ecb:ecb_yc" and yc["recorded"] > 0
+    assert [r["code"] for r in read["curves"]] == [c.code for c in CURVES]
+    assert {r["instrument_id"] for r in read["curves"]} == set(CURVE_IDS.values())
+    assert read["curves"][0]["latest_day"] == "2026-11-17"
     assert [r["code"] for r in read["rates"]] == [s.code for s in SERIES]
     assert {r["instrument_id"] for r in read["rates"]} == set(ESTR_IDS.values())
     assert read["rates"][0]["series"] == "EST.B.EU000A2X2A25.WT"
@@ -116,11 +142,12 @@ def test_the_tools_answer_what_the_pages_show(client: PageClient) -> None:
     assert codes[0] == "EUR" and sorted(codes[1:]) == sorted(CODES)
     usd = next(r for r in read["records"] if r["code"] == "USD")
     assert usd["price_of"] == "EUR in USD" and usd["name"] == "US dollar"
-    page = client.get(DATASETS, "admin").text
+    page = client.get(DATASETS, "admin", tab="records").text
     assert all(r["instrument_id"] in page for r in read["records"])
     assert read["wants"][0]["want_id"] == "w-standing"
     assert read["wants"][0]["state"] == "Kept current"
-    lag, estr_lag = read["lag"]
+    lag, estr_lag, curve_lag = read["lag"]
+    assert curve_lag["dataset"] == "ecb:ecb_yc" and curve_lag["rates"] > 0
     assert lag["rates"] == len(CODES) and lag["median_seconds"] == 15 * 3600 + 56 * 60 + 57
     # €STR of Thursday published Friday at 07:20:16 UTC: from Thursday's
     # midnight in Frankfurt, 22:00 UTC on Wednesday.
@@ -158,12 +185,16 @@ def test_the_currencies_are_searched(client: PageClient) -> None:
     # The tool answers every record, whatever a browser searched.
     answered = client.call_tool("read_datasets").data
     assert len(answered["records"]) == len(CODES) + 1 and len(answered["rates"]) == len(SERIES)
+    assert len(answered["curves"]) == len(CURVES)
+    aaa = client.get(DATASETS, "admin", q="AAA").text
+    assert aaa.count("<tr data-code=") == 1
 
 
 def test_a_licensed_dataset_is_said_so(client: PageClient) -> None:
     page_module._held["feed"].wants.licensed = frozenset({"ecb:ecb_fx"})
-    served, rates = client.call_tool("read_datasets").data["served"]
+    served, rates, curves = client.call_tool("read_datasets").data["served"]
     assert served["licensed"] is True and rates["licensed"] is False
+    assert curves["licensed"] is False
 
 
 def test_the_figures_are_the_data_roles_in_its_order(client: PageClient) -> None:
@@ -186,13 +217,32 @@ def test_estr_not_reached_warns_beside_the_rates(client: PageClient) -> None:
     work = page_module._held["feed"]
     said = figures(work.status, work, estr.status)
     assert said[0].value == "Answering" and said[0].state == "warn"
-    assert said[1].value == "2 of 2 datasets"
+    assert said[1].value == "3 of 3 datasets"
 
 
 def test_an_estr_record_not_held_is_said(client: PageClient) -> None:
     estr = page_module._held["estr"]
     record = estr.status.records["ESTR compounded index"]
     record.instrument_id, record.miss = "", "not held: reported missing"
-    text = client.get(DATASETS, "admin").text
+    text = client.get(DATASETS, "admin", tab="records").text
     assert "1 €STR record not resolved" in text
     assert "not held: reported missing" in text
+
+
+def test_a_yield_curve_not_held_is_said(client: PageClient) -> None:
+    curve = page_module._held["curve"]
+    record = curve.status.records[CURVES[1].code]
+    record.instrument_id, record.miss = "", "not held: reported missing"
+    text = client.get(DATASETS, "admin", tab="records").text
+    assert "1 yield curve not resolved" in text
+    assert f"the deployment holds <code>ecb:{CURVES[1].code}</code>" in text
+
+
+def test_the_yield_curves_not_reached_warn_beside_the_rates(client: PageClient) -> None:
+    curve = page_module._held["curve"]
+    curve.status.error = "https://data-api.ecb.europa.eu/service/data/YC: timed out"
+    text = client.get(CONNECTION, "admin").text
+    assert 'state="warn"' in text and "Yield curves: https://data-api.ecb.europa.eu" in text
+    work = page_module._held["feed"]
+    said = figures(work.status, work, None, curve.status)
+    assert said[0].value == "Answering" and said[0].state == "warn"
