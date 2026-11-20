@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1
+
+SDK 0.37.0: waits for a lost sidecar.
+
 ## 0.6.0
 
 On open-meridian 0.36.0, contract 30 (nothing new in the contract), on core
