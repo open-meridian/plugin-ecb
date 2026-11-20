@@ -106,10 +106,39 @@ class RawStore:
     store's own where none is granted (`granted` False)."""
 
     def __init__(self, root: Path | None = None) -> None:
-        granted = root if root is not None else edge.storage_dir()
-        self.granted = granted is not None
-        self.root = Path(granted) if granted is not None else Path(tempfile.mkdtemp(prefix="ecb-"))
+        self._given = root
+        self._root: Path | None = None
+        self._granted = False
         self._firsts: dict[str, dict[str, Any]] = {}
+
+    def open(self) -> Path:
+        """Where the answers are kept, read once: from the class's `on_start`,
+        once the plugin has registered, since on an instance run as shards or
+        with a standby pod its storage is the shard's own folder, known only
+        then (open-meridian 0.37.0). What the store noted of another is
+        forgotten."""
+        if self._root is None:
+            granted = self._given if self._given is not None else edge.storage_dir()
+            self._granted = granted is not None
+            self._root = (
+                Path(granted) if granted is not None else Path(tempfile.mkdtemp(prefix="ecb-"))
+            )
+            self._firsts = {}
+        return self._root
+
+    def close(self) -> None:
+        """Forget where the answers are kept, as the plugin stops: registered
+        again, it may serve another shard, so `open` reads it afresh."""
+        self._root = None
+
+    @property
+    def root(self) -> Path:
+        return self.open()
+
+    @property
+    def granted(self) -> bool:
+        self.open()
+        return self._granted
 
     def keep(self, fetched: Fetched) -> str:
         """Keep an answer before anything is read from it; its key."""

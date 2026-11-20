@@ -8,7 +8,11 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from ecb.portal import Fetched, path_for
+import pytest
+from meridian import edge
+
+from ecb.__main__ import Lake
+from ecb.portal import Fetched, path_for, portal
 from ecb.rates import Rate
 from ecb.raw import RawStore, range_name
 
@@ -73,10 +77,31 @@ async def test_months_past_the_window_moved_as_the_setting_says(tmp_path: Path) 
     assert mover.stored[0].record_count == 3
 
 
-async def test_nothing_moved_without_granted_storage() -> None:
+async def test_nothing_moved_without_granted_storage(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("MERIDIAN_STORAGE_DIR", raising=False)
     store = RawStore(None)
-    store.granted = False
     store.keep(fetched(datetime(2020, 1, 1, tzinfo=UTC)))
     mover = Mover()
     assert (await store.tend(mover, 1, "deleted", AT))["deleted"] == 0  # type: ignore[arg-type]
     assert mover.moved == []
+
+
+async def test_storage_read_once_registered(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """On an instance run as shards, storage is read once the plugin has
+    registered, from the class's on_start: its shard's own folder, read
+    afresh when it registers again (open-meridian 0.37.0). Built before
+    Register, as `main()` builds it, nothing is read: read then, it raises."""
+    monkeypatch.setenv("MERIDIAN_STORAGE_DIR", str(tmp_path))
+    monkeypatch.setenv("MERIDIAN_PLUGIN_SHARDS", "2")
+    monkeypatch.setattr(edge, "_serving", None)
+    lake = Lake(portal(False), RawStore())
+    monkeypatch.setattr(edge, "_serving", (1, 2))
+    await lake.on_start()
+    assert lake.raw.granted
+    assert lake.raw.root == tmp_path / "shard-1"
+    await lake.on_stop()
+    monkeypatch.setattr(edge, "_serving", (0, 2))
+    await lake.on_start()
+    assert lake.raw.root == tmp_path / "shard-0"
