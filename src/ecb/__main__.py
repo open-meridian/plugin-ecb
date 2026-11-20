@@ -82,6 +82,17 @@ class Lake(Feed):
         self.wake.set()
         await self.raw.tend(self.plugin, config.window_days, config.past_window, self.now())
 
+    async def on_start(self) -> None:
+        """Its storage read once registered: on an instance run as shards or
+        with a standby pod, the shard's own folder (open-meridian 0.37.0)."""
+        await super().on_start()
+        self.raw.open()
+
+    async def on_stop(self) -> None:
+        """Its storage forgotten: registered again, it is read afresh."""
+        self.raw.close()
+        await super().on_stop()
+
     async def run(self) -> None:
         """The current rates and €STR checked, storage tended, the licences
         read, and the feed delay reported (contract v28, ReportLatency)."""
